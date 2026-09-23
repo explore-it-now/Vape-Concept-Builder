@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Bricolage+Grotesque:opsz,wght@12..96,400..800&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Instrument+Serif:ital@0;1&amp;family=Caveat:wght@500;700&amp;display=swap">
+<style>
+html, body { margin: 0; background: #09090b; color: #f2efe9; }
+body { font-family: "Geist", system-ui, sans-serif; -webkit-font-smoothing: antialiased; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+*, *::before, *::after { box-sizing: border-box; }
+a { color: #f2efe9; text-decoration: none; }
+a:hover { color: #ffffff; }
+::selection { background: rgba(255,255,255,0.25); }
+:focus-visible { outline: 2px solid #f2efe9; outline-offset: 3px; }
+input::placeholder { color: rgba(242,239,233,0.5); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style>
+</helmet>
+<div style="position: relative; min-height: 100vh; overflow-x: clip; --accent: {{ accent }};">
+  <canvas ref="{{ smokeRef }}" aria-hidden="true" style="position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 0; background: #09090b;"></canvas>
+  <div aria-hidden="true" style="position: fixed; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(180deg, rgba(9,9,11,0.2) 0%, rgba(9,9,11,0) 30%, rgba(9,9,11,0.55) 100%);"></div>
+
+  <nav style="position: sticky; top: 0; z-index: 10; backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); background: rgba(9,9,11,0.72); border-bottom: 1px solid rgba(255,255,255,0.07);">
+    <div style="max-width: 1440px; margin: 0 auto; padding: 14px clamp(18px, 3.5vw, 48px); display: flex; align-items: center; gap: 28px;">
+      <a href="#builder" style="display: flex; align-items: center; gap: 10px; margin-right: auto;">
+        <span style="width: 22px; height: 22px; border-radius: 6px; background: conic-gradient(from 200deg, var(--accent), #f2efe9, var(--accent)); transition: background 400ms;"></span>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -0.02em;">Concept<span style="font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--accent); transition: color 400ms;"> builder</span></span>
+      </a>
+      <div style="display: flex; gap: 24px; font-size: 14px; color: rgba(242,239,233,0.84); flex-wrap: wrap;">
+        <a href="#builder" style="color: inherit;" style-hover="color: #ffffff;">Builder</a>
+        <a href="#process" style="color: inherit;" style-hover="color: #ffffff;">Process</a>
+      </div>
+      <button type="button" onClick="{{ openSubmit }}" style="font: inherit; font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 999px; border: 0; background: #f2efe9; color: #09090b; cursor: pointer; transition: transform 150ms, background 400ms;" style-hover="background: var(--accent); transform: translateY(-1px);">Submit concept</button>
+    </div>
+  </nav>
+
+  <main style="position: relative; z-index: 1;">
+    <section id="builder" data-screen-label="Builder" style="max-width: 1440px; margin: 0 auto; padding: clamp(28px, 5vh, 56px) clamp(18px, 3.5vw, 48px) 40px;">
+      <div style="display: flex; flex-wrap: wrap; gap: clamp(24px, 3vw, 44px); align-items: stretch;">
+
+        <div style="flex: 1 1 340px; max-width: 420px; min-width: 0; display: flex; flex-direction: column; gap: 28px;">
+          <header style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; gap: 10px; font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(242,239,233,0.8);">
+              <span style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 12px var(--accent); transition: background 400ms, box-shadow 400ms;"></span>
+              <span>Custom hardware configurator</span>
+            </div>
+            <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(42px, 5vw, 76px); line-height: 0.95; letter-spacing: -0.035em; text-wrap: balance;">Design your device. <em style="font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; background: linear-gradient(100deg, var(--accent) 0%, #ffffff 90%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 0.06em;">See it in 3D.</em><svg aria-hidden="true" viewBox="0 0 300 24" preserveAspectRatio="none" style="display: block; width: min(78%, 360px); height: 16px; margin-top: 6px; overflow: visible;"><path d="M4 16 C 60 6, 120 20, 180 10 S 270 8, 296 12" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" style="transition: stroke 400ms;"></path><path d="M30 21 C 110 14, 200 20, 262 16" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" opacity="0.6" style="transition: stroke 400ms;"></path></svg></h1>
+            <p style="margin: 0; font-size: 17px; line-height: 1.55; color: rgba(242,239,233,0.84); text-wrap: pretty; max-width: 380px;">Start with a device, dress it in a finish, put your name on it and pick the box it ships in. Play around. Nothing's final until you hit submit.</p>
+          </header>
+
+          <div style="display: flex; flex-direction: column; gap: 26px; padding: 24px; border-radius: 22px; background: rgba(14,14,17,0.8); border: 1px solid rgba(255,255,255,0.09); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: 0 30px 80px rgba(0,0,0,0.35);">
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--accent); transition: color 400ms;">01</span>
+                <span style="font-size: 15px; font-weight: 600;">Device</span>
+                <span style="margin-left: auto; font-size: 13px; color: rgba(242,239,233,0.76);">{{ deviceLabel }}</span>
+              </div>
+              <div role="radiogroup" aria-label="Device" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+                <sc-for list="{{ devices }}" as="d" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ d.checked }}" onClick="{{ d.pick }}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 64px; padding: 11px 12px; border-radius: 14px; border: 1px solid {{ d.border }}; background: {{ d.bg }}; color: #f2efe9; font: inherit; text-align: left; cursor: pointer; transition: background 150ms, border-color 150ms;" style-hover="border-color: rgba(255,255,255,0.35);">
+                    <span style="font-size: 13px; font-weight: 600; line-height: 1.2;">{{ d.short }}</span>
+                    <span style="font-size: 12px; color: rgba(242,239,233,0.76);">{{ d.note }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--accent); transition: color 400ms;">02</span>
+                <span style="font-size: 15px; font-weight: 600;">Finish</span>
+                <span style="margin-left: auto; font-size: 13px; color: rgba(242,239,233,0.76);">{{ finishLabel }}</span>
+              </div>
+              <div role="radiogroup" aria-label="Finish" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <sc-for list="{{ finishes }}" as="f" hint-placeholder-count="5">
+                  <button type="button" role="radio" aria-checked="{{ f.checked }}" aria-label="{{ f.label }}" title="{{ f.label }}" onClick="{{ f.pick }}" style="width: 48px; height: 48px; padding: 4px; border-radius: 999px; border: 1.5px solid {{ f.ring }}; background: transparent; cursor: pointer; transition: border-color 150ms, transform 150ms;" style-hover="transform: scale(1.06);">
+                    <span style="display: block; width: 100%; height: 100%; border-radius: 999px; background: {{ f.swatchBg }}; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.35), inset 0 2px 3px rgba(255,255,255,0.35);"></span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--accent); transition: color 400ms;">03</span>
+                <label for="cb2-brand" style="font-size: 15px; font-weight: 600;">Brand name</label>
+                <span style="margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 12px; color: rgba(242,239,233,0.76);">{{ brandCount }}</span>
+              </div>
+              <input id="cb2-brand" type="text" maxLength="14" autoComplete="off" spellCheck="false" value="{{ brand }}" onChange="{{ onBrand }}" placeholder="Your brand" style="width: 100%; height: 52px; padding: 0 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: #f2efe9; font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 700; font-size: 17px; letter-spacing: 0.12em; text-transform: uppercase; outline: none; transition: border-color 150ms;" style-focus="border-color: var(--accent);">
+              <span style="font-size: 12px; color: rgba(242,239,233,0.84);">Runs along the side of the device. Up to 14 characters.</span>
+              <div style="display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 10px 12px; margin-top: 4px;">
+                <span style="font-size: 13px; color: rgba(242,239,233,0.84);">Placement</span>
+                <div role="radiogroup" aria-label="Placement" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <sc-for list="{{ placements }}" as="o" hint-placeholder-count="3">
+                    <button type="button" role="radio" aria-checked="{{ o.checked }}" onClick="{{ o.pick }}" style="min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid {{ o.border }}; background: {{ o.bg }}; color: {{ o.fg }}; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 150ms, border-color 150ms, color 150ms;" style-hover="border-color: rgba(255,255,255,0.4);">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+                <span style="font-size: 13px; color: rgba(242,239,233,0.84);">Method</span>
+                <div role="radiogroup" aria-label="Method" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <sc-for list="{{ methods }}" as="o" hint-placeholder-count="3">
+                    <button type="button" role="radio" aria-checked="{{ o.checked }}" onClick="{{ o.pick }}" style="min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid {{ o.border }}; background: {{ o.bg }}; color: {{ o.fg }}; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 150ms, border-color 150ms, color 150ms;" style-hover="border-color: rgba(255,255,255,0.4);">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: var(--accent); transition: color 400ms;">04</span>
+                <span style="font-size: 15px; font-weight: 600;">Packaging</span>
+                <span style="margin-left: auto; font-size: 13px; color: rgba(242,239,233,0.76);">{{ packLabel }}</span>
+              </div>
+              <div role="radiogroup" aria-label="Packaging" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <sc-for list="{{ packs }}" as="p" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ p.checked }}" onClick="{{ p.pick }}" style="min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid {{ p.border }}; background: {{ p.bg }}; color: {{ p.fg }}; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 150ms, border-color 150ms, color 150ms;" style-hover="border-color: rgba(255,255,255,0.35);">{{ p.label }}</button>
+                </sc-for>
+              </div>
+              <input id="cb3-art" type="file" accept="image/png,image/jpeg,image/webp" onChange="{{ onArtwork }}" ref="{{ fileRef }}" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;">
+              <sc-if value="{{ noArtwork }}" hint-placeholder-val="{{ true }}">
+                <label for="cb3-art" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 16px; border-radius: 14px; border: 1px dashed rgba(255,255,255,0.28); cursor: pointer; transition: border-color 150ms, background 150ms;" style-hover="border-color: var(--accent); background: rgba(255,255,255,0.03);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M17 8l-5-5-5 5"></path><path d="M12 3v12"></path></svg>
+                  <span style="display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-size: 14px; font-weight: 600;">Upload box artwork</span>
+                    <span style="font-size: 12px; color: rgba(242,239,233,0.8);">PNG, JPG or WebP. Covers the front of the box.</span>
+                  </span>
+                </label>
+              </sc-if>
+              <sc-if value="{{ hasArtwork }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 8px 8px 8px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.03);">
+                  <span role="img" aria-label="Uploaded box artwork" style="width: 40px; height: 40px; border-radius: 8px; background-image: {{ artworkBg }}; background-size: cover; background-position: center; flex: none;"></span>
+                  <span style="flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ artworkName }}</span>
+                  <label for="cb3-art" style="font-size: 13px; font-weight: 600; padding: 8px 10px; border-radius: 999px; cursor: pointer;" style-hover="background: rgba(255,255,255,0.08);">Replace</label>
+                  <button type="button" onClick="{{ clearArtwork }}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: 999px; border: 0; background: transparent; color: #f2efe9; cursor: pointer;" style-hover="background: rgba(255,255,255,0.08);">Remove</button>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.1);">
+              <button type="button" onClick="{{ openSubmit }}" style="position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; padding: 0 26px; border-radius: 999px; border: 0; background: var(--accent); color: #09090b; font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; cursor: pointer; box-shadow: 0 0 0 0 var(--accent), 0 12px 40px -8px var(--accent); transition: background 400ms, transform 180ms, box-shadow 250ms, filter 150ms; width: 100%;" style-hover="transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 0 0 4px rgba(255,255,255,0.08), 0 18px 50px -6px var(--accent);" style-active="transform: translateY(0); filter: brightness(0.95);">
+                Submit concept
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+              </button>
+              <span style="font-size: 12px; color: rgba(242,239,233,0.8); text-align: center;">Your account manager replies with options, minimums and lead times.</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+          <div style="position: relative; flex: 1; min-height: clamp(460px, 74vh, 820px); border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: radial-gradient(ellipse 60% 55% at 45% 55%, rgba(255,255,255,0.07), rgba(255,255,255,0) 70%);">
+            <canvas ref="{{ stageRef }}" aria-label="{{ stageAlt }}" role="img" style="position: absolute; inset: 0; width: 100%; height: 100%; display: block;"></canvas>
+            <div style="position: absolute; top: 18px; left: 20px; right: 20px; display: flex; justify-content: space-between; gap: 12px; pointer-events: none; font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(242,239,233,0.8);">
+              <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 999px; background: var(--accent); transition: background 400ms;"></span>Live render</span>
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                Drag to rotate
+              </span>
+            </div>
+            <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+              <div style="position: absolute; inset: 0; display: grid; place-items: center; font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(242,239,233,0.76); pointer-events: none;">{{ loadingText }}</div>
+            </sc-if>
+            <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 140px; pointer-events: none; background: linear-gradient(180deg, rgba(9,9,11,0) 0%, rgba(9,9,11,0.7) 100%);"></div>
+            <div style="position: absolute; left: 20px; right: 20px; bottom: 18px; pointer-events: none; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 20px;">
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                <span style="font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 800; font-size: clamp(20px, 2vw, 28px); letter-spacing: 0.04em;">{{ engraving }}</span>
+                <span style="font-size: 13px; color: rgba(242,239,233,0.8);">{{ stageCaption }}</span>
+              </div>
+              <span style="font-size: 12px; color: rgba(242,239,233,0.84);">Illustrative shapes, not to scale</span>
+            </div>
+            <div aria-hidden="true" style="position: absolute; right: clamp(16px, 6%, 64px); top: 64px; pointer-events: none; display: flex; flex-direction: column; align-items: flex-end; transform: rotate(-5deg);">
+              <span style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 26px; line-height: 1; color: #f2efe9;">go on, give it a spin</span>
+              <svg viewBox="0 0 120 70" width="96" height="56" style="margin-right: 40px; overflow: visible;"><path d="M110 6 C 90 40, 60 58, 14 56" fill="none" stroke="#f2efe9" stroke-width="2.5" stroke-linecap="round"></path><path d="M26 46 L 12 56 L 27 64" fill="none" stroke="#f2efe9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div aria-hidden="true" style="position: absolute; left: clamp(14px, 3.5%, 36px); top: 20%; width: 112px; height: 112px; border-radius: 999px; background: var(--accent); color: #09090b; display: grid; place-items: center; text-align: center; transform: rotate(-12deg); box-shadow: 0 14px 30px rgba(0,0,0,0.35); pointer-events: none; transition: background 400ms;">
+              <span style="font-family: 'Caveat', cursive; font-weight: 700; font-size: {{ stickerSize }}px; line-height: 0.95; padding: 0 10px; max-width: 100%; overflow-wrap: anywhere;">made for<br>{{ stickerName }}</span>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: stretch; gap: 1px; border-radius: 20px; overflow: hidden; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+            <sc-for list="{{ specRows }}" as="r" hint-placeholder-count="4">
+              <div style="flex: 1 1 130px; min-width: 0; padding: 14px 18px; background: rgba(14,14,17,0.86); display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(242,239,233,0.84);">{{ r.label }}</span>
+                <span style="font-size: 15px; font-weight: 600; overflow-wrap: anywhere;">{{ r.value }}</span>
+              </div>
+            </sc-for>
+            <div style="flex: 1 1 100%; padding: 12px; background: rgba(14,14,17,0.86); display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px 12px;">
+              <span role="status" style="font-size: 13px; font-weight: 600; color: var(--accent); opacity: {{ copiedOpacity }}; transition: opacity 300ms;">Copied</span>
+              <button type="button" onClick="{{ onSheet }}" style="display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.24); background: transparent; color: #f2efe9; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color 150ms, background 150ms;" style-hover="border-color: #ffffff; background: rgba(255,255,255,0.05);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M12 18v-6"></path><path d="M9 15l3 3 3-3"></path></svg>
+                Spec sheet (PDF)
+              </button>
+              <button type="button" onClick="{{ onCopy }}" style="display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.24); background: transparent; color: #f2efe9; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: border-color 150ms, background 150ms;" style-hover="border-color: #ffffff; background: rgba(255,255,255,0.05);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                Copy summary
+              </button>
+            </div>
+          </div>
+          <sc-if value="{{ showManual }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border-radius: 18px; background: rgba(14,14,17,0.86); border: 1px solid rgba(255,255,255,0.1);">
+              <label for="cb2-manual" style="font-size: 13px; color: rgba(242,239,233,0.84);">Clipboard access is blocked here. Select and copy this text:</label>
+              <textarea id="cb2-manual" readOnly="true" rows="4" value="{{ summaryText }}" ref="{{ manualRef }}" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: #f2efe9; font-family: 'Geist Mono', monospace; font-size: 13px; resize: vertical;"></textarea>
+            </div>
+          </sc-if>
+          <p style="margin: 0; font-size: 12px; color: rgba(242,239,233,0.84);">Turnaround times are illustrative until confirmed by your account manager.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="process" data-screen-label="Process" style="max-width: 1440px; margin: 0 auto; padding: clamp(64px, 10vh, 120px) clamp(18px, 3.5vw, 48px);">
+      <div style="display: flex; flex-direction: column; gap: 48px;">
+        <h2 style="margin: 0; max-width: 780px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(30px, 3.6vw, 52px); line-height: 1.02; letter-spacing: -0.035em; text-wrap: balance;">From first concept to <em style="font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; background: linear-gradient(100deg, var(--accent) 0%, #ffffff 90%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 0.06em;">production run.</em></h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+            <div style="padding: 32px 28px 36px; background: rgba(12,12,15,0.84); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; flex-direction: column; gap: 14px;">
+              <span style="font-family: 'Geist Mono', monospace; font-size: 13px; color: var(--accent); transition: color 400ms;">{{ s.n }}</span>
+              <h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 22px;">{{ s.title }}</h3>
+              <span style="font-family: 'Caveat', cursive; font-weight: 700; font-size: 22px; line-height: 1.1; color: var(--accent); transform: rotate(-2deg); transform-origin: left center; transition: color 400ms;">{{ s.note }}</span>
+              <p style="margin: 0; font-size: 15px; line-height: 1.6; color: rgba(242,239,233,0.84); text-wrap: pretty;">{{ s.body }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" data-screen-label="Contact" style="max-width: 1440px; margin: 0 auto; padding: 0 clamp(18px, 3.5vw, 48px) clamp(64px, 10vh, 120px);">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 28px; padding: clamp(32px, 5vw, 64px); border-radius: 32px; background: rgba(14,14,17,0.8); border: 1px solid rgba(255,255,255,0.09); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 640px;">
+          <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(28px, 3.2vw, 46px); line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance;">Ready to make it <em style="font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; background: linear-gradient(100deg, var(--accent) 0%, #ffffff 90%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 0.06em;">real?</em></h2>
+          <p style="margin: 0; font-size: 16px; line-height: 1.6; color: rgba(242,239,233,0.84);">Submit your concept and an account manager will confirm what's possible for your order size and timeline.</p>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="mailto:sales@example.com" style="display: flex; align-items: center; min-height: 54px; padding: 0 22px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.22); font-size: 15px; font-weight: 600; transition: border-color 150ms;" style-hover="border-color: #ffffff;">Email sales</a>
+          <button type="button" onClick="{{ openSubmit }}" style="position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; padding: 0 26px; border-radius: 999px; border: 0; background: var(--accent); color: #09090b; font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; cursor: pointer; box-shadow: 0 0 0 0 var(--accent), 0 12px 40px -8px var(--accent); transition: background 400ms, transform 180ms, box-shadow 250ms, filter 150ms;" style-hover="transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 0 0 4px rgba(255,255,255,0.08), 0 18px 50px -6px var(--accent);" style-active="transform: translateY(0); filter: brightness(0.95);">
+                Submit concept
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+              </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,0.07); background: rgba(9,9,11,0.6);">
+    <div style="max-width: 1440px; margin: 0 auto; padding: 28px clamp(18px, 3.5vw, 48px); display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; font-size: 13px; color: rgba(242,239,233,0.84);">
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: -0.02em; font-size: 16px; color: rgba(242,239,233,0.9);">Concept<span style="font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400;"> builder</span></span>
+      <p style="margin: 0; max-width: 620px; text-wrap: pretty;">This is a demonstration. It isn't connected to real stock, pricing or production data, and the device shapes are illustrative rather than exact models of any manufacturer's hardware.</p>
+    </div>
+  </footer>
+
+  <sc-if value="{{ submitOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSubmit }}" style="position: fixed; inset: 0; z-index: 50; background: rgba(5,5,7,0.62); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: grid; place-items: center; padding: 20px; overflow-y: auto;">
+      <div role="dialog" aria-modal="true" aria-labelledby="cb3-submit-title" onClick="{{ stop }}" style="width: 100%; max-width: 560px; border-radius: 28px; background: rgba(16,16,19,0.94); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 80px -30px var(--accent); padding: clamp(22px, 4vw, 34px); display: flex; flex-direction: column; gap: 22px;">
+        <div style="display: flex; align-items: flex-start; gap: 16px;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);">{{ submitKicker }}</span>
+            <h2 id="cb3-submit-title" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(26px, 3.4vw, 34px); line-height: 1; letter-spacing: -0.03em;">{{ submitTitle }}</h2>
+          </div>
+          <button type="button" aria-label="Close" onClick="{{ closeSubmit }}" style="width: 40px; height: 40px; flex: none; border-radius: 999px; border: 1px solid rgba(255,255,255,0.16); background: transparent; color: #f2efe9; display: grid; place-items: center; cursor: pointer;" style-hover="background: rgba(255,255,255,0.08);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          <sc-for list="{{ chips }}" as="c" hint-placeholder-count="6">
+            <span style="font-size: 12px; padding: 6px 11px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(242,239,233,0.9);">{{ c }}</span>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ showForm }}" hint-placeholder-val="{{ true }}">
+          <form onSubmit="{{ onSubmit }}" noValidate="true" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: rgba(242,239,233,0.84);">Your name
+                <input ref="{{ firstFieldRef }}" type="text" autoComplete="name" value="{{ fName }}" onChange="{{ setName }}" style="height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid {{ nameBorder }}; background: rgba(255,255,255,0.04); color: #f2efe9; font: inherit; font-size: 15px; outline: none;" style-focus="border-color: var(--accent);">
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: rgba(242,239,233,0.84);">Company
+                <input type="text" autoComplete="organization" value="{{ fCompany }}" onChange="{{ setCompany }}" style="height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: #f2efe9; font: inherit; font-size: 15px; outline: none;" style-focus="border-color: var(--accent);">
+              </label>
+            </div>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: rgba(242,239,233,0.84);">Work email
+              <input type="email" autoComplete="email" value="{{ fEmail }}" onChange="{{ setEmail }}" style="height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid {{ emailBorder }}; background: rgba(255,255,255,0.04); color: #f2efe9; font: inherit; font-size: 15px; outline: none;" style-focus="border-color: var(--accent);">
+            </label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 13px; color: rgba(242,239,233,0.84);">Estimated quantity</span>
+              <div role="radiogroup" aria-label="Estimated quantity" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <sc-for list="{{ quantities }}" as="q" hint-placeholder-count="4">
+                  <button type="button" role="radio" aria-checked="{{ q.checked }}" onClick="{{ q.pick }}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid {{ q.border }}; background: {{ q.bg }}; color: {{ q.fg }}; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 150ms, border-color 150ms, color 150ms;" style-hover="border-color: rgba(255,255,255,0.4);">{{ q.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: rgba(242,239,233,0.84);">Anything else (optional)
+              <textarea rows="3" value="{{ fNotes }}" onChange="{{ setNotes }}" placeholder="Target launch date, markets, questions" style="padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: #f2efe9; font: inherit; font-size: 15px; resize: vertical; outline: none;" style-focus="border-color: var(--accent);"></textarea>
+            </label>
+            <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
+              <span role="alert" style="font-size: 13px; color: #ffb4a3;">{{ formErrorText }}</span>
+            </sc-if>
+            <button type="submit" style="display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; margin-top: 4px; border-radius: 999px; border: 0; background: var(--accent); color: #09090b; font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 700; cursor: pointer; box-shadow: 0 12px 40px -8px var(--accent); transition: transform 180ms, filter 150ms;" style-hover="transform: translateY(-2px); filter: brightness(1.06);" style-active="transform: translateY(0);">
+              Send concept
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+            </button>
+            <span style="font-size: 12px; color: rgba(242,239,233,0.74); text-align: center;">Demo only. Nothing is sent or stored.</span>
+          </form>
+        </sc-if>
+
+        <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+              <span style="width: 40px; height: 40px; flex: none; border-radius: 999px; background: var(--accent); color: #09090b; display: grid; place-items: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+              </span>
+              <span style="font-size: 15px; line-height: 1.5;">{{ thanksText }}</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <button type="button" onClick="{{ onSheet }}" style="flex: 1 1 180px; min-height: 50px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.24); background: transparent; color: #f2efe9; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;" style-hover="border-color: #ffffff; background: rgba(255,255,255,0.05);">Download spec sheet</button>
+              <button type="button" onClick="{{ closeSubmit }}" style="flex: 1 1 180px; min-height: 50px; border-radius: 999px; border: 0; background: #f2efe9; color: #09090b; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;" style-hover="background: #ffffff;">Back to builder</button>
+            </div>
+            <span style="font-size: 12px; color: rgba(242,239,233,0.74); text-align: center;">Demo only. Nothing was sent or stored.</span>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultBrand&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;NORTHSTAR&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const DEVICES = [
+  { id: 'aio', label: 'All-in-one', short: 'All-in-one', note: 'Single unit' },
+  { id: 'cart', label: '510 cartridge', short: '510 cart', note: 'Threaded tank' },
+  { id: 'batt', label: 'Rechargeable battery', short: 'Battery', note: 'Rechargeable' }
+];
+const FINISHES = [
+  { id: 'black', label: 'Matte black', accent: '#ff7a45', smoke: ['#ff4d2e', '#5b2bff'], swatchBg: 'radial-gradient(circle at 35% 30%, #3a3a3d, #121214 70%)' },
+  { id: 'steel', label: 'Brushed steel', accent: '#7cc8ff', smoke: ['#2f86ff', '#7fe6ff'], swatchBg: 'conic-gradient(from 30deg, #8e9398, #e7eaec, #9a9fa4, #d9dcdf, #8e9398)' },
+  { id: 'rose', label: 'Rose gold', accent: '#ff9bb0', smoke: ['#ff5f8f', '#ffb070'], swatchBg: 'conic-gradient(from 30deg, #b77a66, #f6c9b7, #c48a74, #edb8a4, #b77a66)' },
+  { id: 'olive', label: 'Deep olive', accent: '#bce46f', smoke: ['#8fd14f', '#1f9e84'], swatchBg: 'radial-gradient(circle at 35% 30%, #6c7a52, #353d25 70%)' },
+  { id: 'white', label: 'Ceramic white', accent: '#cdbcff', smoke: ['#9f86ff', '#8fd3ff'], swatchBg: 'radial-gradient(circle at 35% 30%, #ffffff, #dcd6cb 75%)' }
+];
+const PACKS = [
+  { id: 'kraft', label: 'Kraft sleeve' },
+  { id: 'black', label: 'Matte black box' },
+  { id: 'window', label: 'Window box' }
+];
+const PLACEMENTS = [
+  { id: 'front', label: 'Front' },
+  { id: 'back', label: 'Back' },
+  { id: 'both', label: 'Front and back' }
+];
+const METHODS = [
+  { id: 'engraved', label: 'Engraved' },
+  { id: 'printed', label: 'Printed' },
+  { id: 'embossed', label: 'Embossed' }
+];
+const esc = (t) => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const STEPS = [
+  { n: '01', title: 'Play', note: 'the fun bit', body: 'Try every combination you like. Swap finishes, move your logo, drop in your own box artwork.' },
+  { n: '02', title: 'Talk it through', note: 'a real person, not a bot', body: 'Your account manager checks the concept against what can actually be made, with minimums and lead times.' },
+  { n: '03', title: 'Hold it', note: 'the best bit', body: 'A physical sample lands on your desk. Once it feels right in the hand, we go to production.' }
+];
+
+class Component extends DCLogic {
+  state = { device: 'aio', finish: 'black', pack: 'kraft', brand: null, placement: 'front', method: 'engraved', artwork: null, artworkName: '', submitOpen: false, submitted: false, formError: '', form: { name: '', company: '', email: '', qty: '1,000–5,000', notes: '' }, copied: false, showManual: false, ready: false, failed: false };
+  fileRef = React.createRef();
+  firstFieldRef = React.createRef();
+
+  openSubmit() {
+    this.setState({ submitOpen: true, submitted: false, formError: '' }, () => setTimeout(() => this.firstFieldRef.current?.focus(), 30));
+    this._esc = (e) => { if (e.key === 'Escape') this.closeSubmit(); };
+    addEventListener('keydown', this._esc);
+  }
+  closeSubmit() {
+    removeEventListener('keydown', this._esc);
+    this.setState({ submitOpen: false });
+  }
+  submit(e) {
+    e.preventDefault();
+    const f = this.state.form || { name: '', email: '' };
+    if (!f.name.trim()) return this.setState({ formError: 'name' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) return this.setState({ formError: 'email' });
+    this.setState({ formError: '', submitted: true });
+  }
+
+  onArtwork(e) {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file || !/^image\//.test(file.type)) return;
+    const reader = new FileReader();
+    reader.onload = () => this.setState({ artwork: reader.result, artworkName: file.name });
+    reader.readAsDataURL(file);
+  }
+
+  rows() {
+    const s = this.state;
+    return [
+      { label: 'Device', value: DEVICES.find(d => d.id === s.device).label },
+      { label: 'Finish', value: FINISHES.find(f => f.id === s.finish).label },
+      { label: 'Brand name', value: this.engraving() },
+      { label: 'Placement', value: PLACEMENTS.find(p => p.id === s.placement).label },
+      { label: 'Method', value: METHODS.find(m => m.id === s.method).label },
+      { label: 'Packaging', value: PACKS.find(p => p.id === s.pack).label },
+      { label: 'Box artwork', value: s.artwork ? 'Custom upload' : 'Standard layout' }
+    ];
+  }
+
+  refCode() {
+    const str = this.rows().map(r => r.value).join('|');
+    let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return 'CB-' + h.toString(36).toUpperCase().padStart(6, '0').slice(0, 6);
+  }
+
+  printSheet() {
+    const img = this.stage ? this.stage.snapshot() : '';
+    const rows = this.rows();
+    const fin = FINISHES.find(f => f.id === this.state.finish);
+    const date = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Concept spec sheet ${this.refCode()}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>@page{size:A4;margin:14mm}*{box-sizing:border-box}body{margin:0;font-family:"IBM Plex Sans",sans-serif;color:#111113;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.h{font-family:Archivo,sans-serif;font-stretch:125%;font-weight:800}.m{font-family:"IBM Plex Mono",monospace;font-size:10pt;letter-spacing:.1em;text-transform:uppercase;color:#55555c}</style></head>
+<body><div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111113;padding-bottom:10px">
+<div><div class="m">Concept spec sheet</div><div class="h" style="font-size:26pt;line-height:1.05;margin-top:4px">${esc(this.engraving())}</div></div>
+<div style="text-align:right"><div class="m">Ref ${this.refCode()}</div><div style="font-size:11pt;margin-top:4px">${esc(date)}</div></div></div>
+<div style="margin-top:14px;border-radius:14px;overflow:hidden;background:radial-gradient(ellipse at 45% 55%,#2a2a30,#0c0c0f 70%);height:118mm;display:flex;align-items:center;justify-content:center;position:relative">
+${img ? `<img src="${img}" style="max-width:100%;max-height:100%;display:block">` : ''}
+<div style="position:absolute;left:14px;bottom:12px;width:14px;height:14px;border-radius:99px;background:${fin.accent}"></div></div>
+<table style="width:100%;border-collapse:collapse;margin-top:16px;font-size:12pt">${rows.map(r => `<tr><td class="m" style="padding:9px 0;border-bottom:1px solid #dcdcdf;width:38%">${esc(r.label)}</td><td style="padding:9px 0;border-bottom:1px solid #dcdcdf;font-weight:600">${esc(r.value)}</td></tr>`).join('')}</table>
+<p style="margin:16px 0 0;font-size:10pt;color:#55555c;line-height:1.5">This concept is illustrative. Device shapes are not to scale and are not exact models of any manufacturer's hardware. Pricing, minimum order quantities and turnaround times are confirmed by your account manager.</p>
+</body></html>`;
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(frame);
+    const doc = frame.contentDocument;
+    doc.open(); doc.write(html); doc.close();
+    const go = () => {
+      try { frame.contentWindow.focus(); frame.contentWindow.print(); } catch (e) { console.error(e); }
+      setTimeout(() => frame.remove(), 60000);
+    };
+    const ready = doc.fonts ? doc.fonts.ready : Promise.resolve();
+    Promise.race([ready, new Promise(r => setTimeout(r, 1200))]).then(() => setTimeout(go, 150));
+  }
+  smokeRef = React.createRef();
+  stageRef = React.createRef();
+  manualRef = React.createRef();
+
+  componentDidMount() {
+    const url = new URL('concept-scene.js', document.baseURI).href;
+    import(url).then((mod) => {
+      try {
+        this.smoke = mod.createSmoke(this.smokeRef.current);
+        this.stage = mod.createStage(this.stageRef.current);
+        this.sync();
+        this.setState({ ready: true });
+      } catch (e) { console.error(e); this.setState({ failed: true }); }
+    }).catch((e) => { console.error(e); this.setState({ failed: true }); });
+  }
+  componentDidUpdate() { this.sync(); }
+  componentWillUnmount() { clearTimeout(this._t); this.smoke?.dispose(); this.stage?.dispose(); }
+
+  engraving() {
+    const b = this.state.brand ?? (this.props.defaultBrand ?? 'NORTHSTAR');
+    return b.trim() ? b.trim().toUpperCase() : '—';
+  }
+  sync() {
+    const fin = FINISHES.find(f => f.id === this.state.finish);
+    this.smoke?.setColors(fin.smoke[0], fin.smoke[1]);
+    this.stage?.update({ device: this.state.device, finish: fin.id, engraving: this.engraving(), pack: this.state.pack, accent: fin.accent, smoke: fin.smoke, placement: this.state.placement, method: this.state.method, artwork: this.state.artwork });
+  }
+
+  flashCopied() {
+    clearTimeout(this._t);
+    this.setState({ copied: true, showManual: false });
+    this._t = setTimeout(() => this.setState({ copied: false }), 1800);
+  }
+  async copy(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return this.flashCopied(); }
+    } catch (e) {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) return this.flashCopied();
+    } catch (e) {}
+    this.setState({ showManual: true, copied: false }, () => { const el = this.manualRef.current; if (el) { el.focus(); el.select(); } });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const F = s.form || { name: '', company: '', email: '', qty: '1,000–5,000', notes: '' };
+    const brand = s.brand ?? (this.props.defaultBrand ?? 'NORTHSTAR');
+    const engraving = this.engraving();
+    const dev = DEVICES.find(d => d.id === s.device);
+    const fin = FINISHES.find(f => f.id === s.finish);
+    const pack = PACKS.find(p => p.id === s.pack);
+    const rows = this.rows();
+    const opt = (list, key) => list.map(o => {
+      const a = o.id === s[key];
+      return { ...o, checked: a ? 'true' : 'false', bg: a ? '#f2efe9' : 'rgba(255,255,255,0.03)', fg: a ? '#09090b' : '#f2efe9', border: a ? '#f2efe9' : 'rgba(255,255,255,0.14)', pick: () => this.setState({ [key]: o.id }) };
+    });
+    const summaryText = rows.map(r => `${r.label}: ${r.value}`).join('\n');
+    return {
+      accent: fin.accent,
+      smokeRef: this.smokeRef, stageRef: this.stageRef, manualRef: this.manualRef,
+      devices: DEVICES.map(d => {
+        const a = d.id === s.device;
+        return { ...d, checked: a ? 'true' : 'false', bg: a ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.02)', border: a ? 'var(--accent)' : 'rgba(255,255,255,0.1)', pick: () => this.setState({ device: d.id }) };
+      }),
+      finishes: FINISHES.map(f => ({ ...f, checked: f.id === s.finish ? 'true' : 'false', ring: f.id === s.finish ? 'var(--accent)' : 'rgba(255,255,255,0.12)', pick: () => this.setState({ finish: f.id }) })),
+      packs: PACKS.map(p => {
+        const a = p.id === s.pack;
+        return { ...p, checked: a ? 'true' : 'false', bg: a ? '#f2efe9' : 'rgba(255,255,255,0.03)', fg: a ? '#09090b' : '#f2efe9', border: a ? '#f2efe9' : 'rgba(255,255,255,0.14)', pick: () => this.setState({ pack: p.id }) };
+      }),
+      steps: STEPS,
+      stickerName: engraving.length > 12 ? engraving.slice(0, 12) + '…' : engraving,
+      stickerSize: Math.max(13, Math.min(22, Math.floor(150 / Math.max(engraving.length, 1)))),
+      deviceLabel: dev.label, finishLabel: fin.label, packLabel: pack.label,
+      brand, brandCount: `${brand.length}/14`,
+      onBrand: (e) => this.setState({ brand: e.target.value.slice(0, 14) }),
+      engraving,
+      stageCaption: `${dev.label} · ${fin.label} · ${pack.label}`,
+      stageAlt: `3D render: ${dev.label} in ${fin.label}, engraved ${engraving}, with ${pack.label}`,
+      loading: !s.ready,
+      loadingText: s.failed ? '3D preview unavailable in this browser' : 'Loading render',
+      specRows: rows, summaryText,
+      copiedOpacity: s.copied ? 1 : 0,
+      showManual: s.showManual,
+      onCopy: () => this.copy(summaryText),
+      onSheet: () => this.printSheet(),
+      openSubmit: () => this.openSubmit(),
+      closeSubmit: () => this.closeSubmit(),
+      stop: (e) => e.stopPropagation(),
+      submitOpen: s.submitOpen,
+      submitted: s.submitted,
+      showForm: !s.submitted,
+      submitKicker: s.submitted ? `Ref ${this.refCode()}` : 'Submit concept',
+      submitTitle: s.submitted ? 'Concept received.' : 'Send it to our team.',
+      chips: rows.map(r => r.value),
+      firstFieldRef: this.firstFieldRef,
+      fName: F.name, fCompany: F.company, fEmail: F.email, fNotes: F.notes,
+      setName: (e) => this.setState({ form: { ...F, name: e.target.value }, formError: '' }),
+      setCompany: (e) => this.setState({ form: { ...F, company: e.target.value } }),
+      setEmail: (e) => this.setState({ form: { ...F, email: e.target.value }, formError: '' }),
+      setNotes: (e) => this.setState({ form: { ...F, notes: e.target.value } }),
+      quantities: ['Under 1,000', '1,000–5,000', '5,000–20,000', '20,000+'].map(q => {
+        const a = q === F.qty;
+        return { label: q, checked: a ? 'true' : 'false', bg: a ? '#f2efe9' : 'rgba(255,255,255,0.03)', fg: a ? '#09090b' : '#f2efe9', border: a ? '#f2efe9' : 'rgba(255,255,255,0.14)', pick: () => this.setState({ form: { ...F, qty: q } }) };
+      }),
+      nameBorder: s.formError === 'name' ? '#ff8a73' : 'rgba(255,255,255,0.14)',
+      emailBorder: s.formError === 'email' ? '#ff8a73' : 'rgba(255,255,255,0.14)',
+      formError: !!s.formError,
+      formErrorText: s.formError === 'name' ? 'Please add your name.' : 'Please enter a valid email address.',
+      onSubmit: (e) => this.submit(e),
+      thanksText: `Thanks${F.name.trim() ? ', ' + F.name.trim().split(' ')[0] : ''}. In a live version, an account manager would reply to ${F.email.trim() || 'you'} about this concept.`,
+      placements: opt(PLACEMENTS, 'placement'),
+      methods: opt(METHODS, 'method'),
+      fileRef: this.fileRef,
+      onArtwork: (e) => this.onArtwork(e),
+      clearArtwork: () => this.setState({ artwork: null, artworkName: '' }),
+      artworkBg: s.artwork ? `url("${s.artwork}")` : 'none',
+      artworkName: s.artworkName,
+      hasArtwork: !!s.artwork,
+      noArtwork: !s.artwork
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+<style>
+html, body { margin: 0; background: #09090b; color: #f2efe9; }
+body { font-family: "IBM Plex Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+*, *::before, *::after { box-sizing: border-box; }
+a { color: #f2efe9; text-decoration: none; }
+a:hover { color: #ffffff; }
+::selection { background: rgba(255,255,255,0.25); }
+:focus-visible { outline: 2px solid #f2efe9; outline-offset: 3px; }
+input::placeholder { color: rgba(242,239,233,0.5); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style>
+</helmet>
+<div style="position: relative; min-height: 100vh; overflow-x: clip; --accent: {{ accent }};">
+  <canvas ref="{{ smokeRef }}" aria-hidden="true" style="position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 0; background: #09090b;"></canvas>
+  <div aria-hidden="true" style="position: fixed; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(180deg, rgba(9,9,11,0.2) 0%, rgba(9,9,11,0) 30%, rgba(9,9,11,0.55) 100%);"></div>
+
+  <nav style="position: sticky; top: 0; z-index: 10; backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); background: rgba(9,9,11,0.72); border-bottom: 1px solid rgba(255,255,255,0.07);">
+    <div style="max-width: 1440px; margin: 0 auto; padding: 14px clamp(18px, 3.5vw, 48px); display: flex; align-items: center; gap: 28px;">
+      <a href="#builder" style="display: flex; align-items: center; gap: 10px; margin-right: auto;">
+        <span style="width: 22px; height: 22px; border-radius: 6px; background: conic-gradient(from 200deg, var(--accent), #f2efe9, var(--accent)); transition: background 400ms;"></span>
+        <span style="font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 800; font-size: 15px; letter-spacing: 0.06em;">CONCEPT BUILDER</span>
+      </a>
+      <div style="display: flex; gap: 24px; font-size: 14px; color: rgba(242,239,233,0.84); flex-wrap: wrap;">
+        <a href="#builder" style="color: inherit;" style-hover="color: #ffffff;">Builder</a>
+        <a href="#process" style="color: inherit;" style-hover="color: #ffffff;">Process</a>
+      </div>
+      <a href="#contact" style="font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 999px; background: #f2efe9; color: #09090b; transition: transform 150ms, background 150ms;" style-hover="background: #ffffff; color: #09090b; transform: translateY(-1px);">Talk to sales</a>
+    </div>
+  </nav>
+
+  <main style="position: relative; z-index: 1;">
+    <section id="builder" data-screen-label="Builder" style="max-width: 1440px; margin: 0 auto; padding: clamp(28px, 5vh, 56px) clamp(18px, 3.5vw, 48px) 40px;">
+      <div style="display: flex; flex-wrap: wrap; gap: clamp(24px, 3vw, 44px); align-items: stretch;">
+
+        <div style="flex: 1 1 340px; max-width: 420px; min-width: 0; display: flex; flex-direction: column; gap: 28px;">
+          <header style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; align-items: center; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(242,239,233,0.8);">
+              <span style="width: 8px; height: 8px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 12px var(--accent); transition: background 400ms, box-shadow 400ms;"></span>
+              <span>Custom hardware configurator</span>
+            </div>
+            <h1 style="margin: 0; font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 800; font-size: clamp(38px, 4.4vw, 64px); line-height: 0.98; letter-spacing: -0.02em; text-wrap: balance;">Design your device. See it in 3D.</h1>
+            <p style="margin: 0; font-size: 17px; line-height: 1.55; color: rgba(242,239,233,0.84); text-wrap: pretty; max-width: 380px;">Choose a device, finish, brand name and packaging. The preview updates with every choice, and you can copy the full spec to send to your account manager.</p>
+          </header>
+
+          <div style="display: flex; flex-direction: column; gap: 26px; padding: 24px; border-radius: 22px; background: rgba(14,14,17,0.8); border: 1px solid rgba(255,255,255,0.09); backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); box-shadow: 0 30px 80px rgba(0,0,0,0.35);">
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent); transition: color 400ms;">01</span>
+                <span style="font-size: 15px; font-weight: 600;">Device</span>
+                <span style="margin-left: auto; font-size: 13px; color: rgba(242,239,233,0.76);">{{ deviceLabel }}</span>
+              </div>
+              <div role="radiogroup" aria-label="Device" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+                <sc-for list="{{ devices }}" as="d" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ d.checked }}" onClick="{{ d.pick }}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 64px; padding: 11px 12px; border-radius: 14px; border: 1px solid {{ d.border }}; background: {{ d.bg }}; color: #f2efe9; font: inherit; text-align: left; cursor: pointer; transition: background 150ms, border-color 150ms;" style-hover="border-color: rgba(255,255,255,0.35);">
+                    <span style="font-size: 13px; font-weight: 600; line-height: 1.2;">{{ d.short }}</span>
+                    <span style="font-size: 12px; color: rgba(242,239,233,0.76);">{{ d.note }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent); transition: color 400ms;">02</span>
+                <span style="font-size: 15px; font-weight: 600;">Finish</span>
+                <span style="margin-left: auto; font-size: 13px; color: rgba(242,239,233,0.76);">{{ finishLabel }}</span>
+              </div>
+              <div role="radiogroup" aria-label="Finish" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <sc-for list="{{ finishes }}" as="f" hint-placeholder-count="5">
+                  <button type="button" role="radio" aria-checked="{{ f.checked }}" aria-label="{{ f.label }}" title="{{ f.label }}" onClick="{{ f.pick }}" style="width: 48px; height: 48px; padding: 4px; border-radius: 999px; border: 1.5px solid {{ f.ring }}; background: transparent; cursor: pointer; transition: border-color 150ms, transform 150ms;" style-hover="transform: scale(1.06);">
+                    <span style="display: block; width: 100%; height: 100%; border-radius: 999px; background: {{ f.swatchBg }}; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.35), inset 0 2px 3px rgba(255,255,255,0.35);"></span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent); transition: color 400ms;">03</span>
+                <label for="cb2-brand" style="font-size: 15px; font-weight: 600;">Brand name</label>
+                <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: rgba(242,239,233,0.76);">{{ brandCount }}</span>
+              </div>
+              <input id="cb2-brand" type="text" maxLength="14" autoComplete="off" spellCheck="false" value="{{ brand }}" onChange="{{ onBrand }}" placeholder="Your brand" style="width: 100%; height: 52px; padding: 0 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: #f2efe9; font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 700; font-size: 17px; letter-spacing: 0.12em; text-transform: uppercase; outline: none; transition: border-color 150ms;" style-focus="border-color: var(--accent);">
+              <span style="font-size: 12px; color: rgba(242,239,233,0.84);">Engraved along the side of the device. Up to 14 characters.</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: baseline; gap: 10px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent); transition: color 400ms;">04</span>
+                <span style="font-size: 15px; font-weight: 600;">Packaging</span>
+                <span style="margin-left: auto; font-size: 13px; color: rgba(242,239,233,0.76);">{{ packLabel }}</span>
+              </div>
+              <div role="radiogroup" aria-label="Packaging" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <sc-for list="{{ packs }}" as="p" hint-placeholder-count="3">
+                  <button type="button" role="radio" aria-checked="{{ p.checked }}" onClick="{{ p.pick }}" style="min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid {{ p.border }}; background: {{ p.bg }}; color: {{ p.fg }}; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 150ms, border-color 150ms, color 150ms;" style-hover="border-color: rgba(255,255,255,0.35);">{{ p.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+          <div style="position: relative; flex: 1; min-height: clamp(460px, 74vh, 820px); border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: radial-gradient(ellipse 60% 55% at 45% 55%, rgba(255,255,255,0.07), rgba(255,255,255,0) 70%);">
+            <canvas ref="{{ stageRef }}" aria-label="{{ stageAlt }}" role="img" style="position: absolute; inset: 0; width: 100%; height: 100%; display: block;"></canvas>
+            <div style="position: absolute; top: 18px; left: 20px; right: 20px; display: flex; justify-content: space-between; gap: 12px; pointer-events: none; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(242,239,233,0.8);">
+              <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 6px; height: 6px; border-radius: 999px; background: var(--accent); transition: background 400ms;"></span>Live render</span>
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"></path><path d="M21 3v5h-5"></path></svg>
+                Drag to rotate
+              </span>
+            </div>
+            <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+              <div style="position: absolute; inset: 0; display: grid; place-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(242,239,233,0.76); pointer-events: none;">{{ loadingText }}</div>
+            </sc-if>
+            <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 140px; pointer-events: none; background: linear-gradient(180deg, rgba(9,9,11,0) 0%, rgba(9,9,11,0.7) 100%);"></div>
+            <div style="position: absolute; left: 20px; right: 20px; bottom: 18px; pointer-events: none; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 20px;">
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                <span style="font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 800; font-size: clamp(20px, 2vw, 28px); letter-spacing: 0.04em;">{{ engraving }}</span>
+                <span style="font-size: 13px; color: rgba(242,239,233,0.8);">{{ stageCaption }}</span>
+              </div>
+              <span style="font-size: 12px; color: rgba(242,239,233,0.84);">Illustrative shapes, not to scale</span>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: stretch; gap: 1px; border-radius: 20px; overflow: hidden; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+            <sc-for list="{{ specRows }}" as="r" hint-placeholder-count="4">
+              <div style="flex: 1 1 130px; min-width: 0; padding: 14px 18px; background: rgba(14,14,17,0.86); display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(242,239,233,0.84);">{{ r.label }}</span>
+                <span style="font-size: 15px; font-weight: 600; overflow-wrap: anywhere;">{{ r.value }}</span>
+              </div>
+            </sc-for>
+            <div style="flex: 1 1 220px; padding: 12px; background: rgba(14,14,17,0.86); display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
+              <span role="status" style="font-size: 13px; font-weight: 600; color: var(--accent); opacity: {{ copiedOpacity }}; transition: opacity 300ms;">Copied</span>
+              <button type="button" onClick="{{ onCopy }}" style="display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 20px; border-radius: 999px; border: 0; background: var(--accent); color: #09090b; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 400ms, transform 150ms, filter 150ms;" style-hover="filter: brightness(1.08); transform: translateY(-1px);" style-active="transform: translateY(0); filter: brightness(0.94);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                Copy concept summary
+              </button>
+            </div>
+          </div>
+          <sc-if value="{{ showManual }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border-radius: 18px; background: rgba(14,14,17,0.86); border: 1px solid rgba(255,255,255,0.1);">
+              <label for="cb2-manual" style="font-size: 13px; color: rgba(242,239,233,0.84);">Clipboard access is blocked here. Select and copy this text:</label>
+              <textarea id="cb2-manual" readOnly="true" rows="4" value="{{ summaryText }}" ref="{{ manualRef }}" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: #f2efe9; font-family: 'IBM Plex Mono', monospace; font-size: 13px; resize: vertical;"></textarea>
+            </div>
+          </sc-if>
+          <p style="margin: 0; font-size: 12px; color: rgba(242,239,233,0.84);">Turnaround times are illustrative until confirmed by your account manager.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="process" data-screen-label="Process" style="max-width: 1440px; margin: 0 auto; padding: clamp(64px, 10vh, 120px) clamp(18px, 3.5vw, 48px);">
+      <div style="display: flex; flex-direction: column; gap: 48px;">
+        <h2 style="margin: 0; max-width: 780px; font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 800; font-size: clamp(30px, 3.6vw, 52px); line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance;">From first concept to production run.</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: rgba(255,255,255,0.08); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+            <div style="padding: 32px 28px 36px; background: rgba(12,12,15,0.84); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; flex-direction: column; gap: 14px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--accent); transition: color 400ms;">{{ s.n }}</span>
+              <h3 style="margin: 0; font-family: Archivo, sans-serif; font-stretch: 112%; font-weight: 700; font-size: 22px;">{{ s.title }}</h3>
+              <p style="margin: 0; font-size: 15px; line-height: 1.6; color: rgba(242,239,233,0.84); text-wrap: pretty;">{{ s.body }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" data-screen-label="Contact" style="max-width: 1440px; margin: 0 auto; padding: 0 clamp(18px, 3.5vw, 48px) clamp(64px, 10vh, 120px);">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 28px; padding: clamp(32px, 5vw, 64px); border-radius: 32px; background: rgba(14,14,17,0.8); border: 1px solid rgba(255,255,255,0.09); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 640px;">
+          <h2 style="margin: 0; font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 800; font-size: clamp(28px, 3.2vw, 46px); line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance;">Ready to make it real?</h2>
+          <p style="margin: 0; font-size: 16px; line-height: 1.6; color: rgba(242,239,233,0.84);">Send your copied summary to our sales team. They'll confirm what's possible for your order size and timeline.</p>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="#builder" style="display: flex; align-items: center; min-height: 50px; padding: 0 22px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.22); font-size: 15px; font-weight: 600; transition: border-color 150ms;" style-hover="border-color: #ffffff;">Back to builder</a>
+          <a href="mailto:sales@example.com" style="display: flex; align-items: center; min-height: 50px; padding: 0 24px; border-radius: 999px; background: #f2efe9; color: #09090b; font-size: 15px; font-weight: 600; transition: transform 150ms;" style-hover="color: #09090b; transform: translateY(-1px);">Talk to sales</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,0.07); background: rgba(9,9,11,0.6);">
+    <div style="max-width: 1440px; margin: 0 auto; padding: 28px clamp(18px, 3.5vw, 48px); display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; font-size: 13px; color: rgba(242,239,233,0.84);">
+      <span style="font-family: Archivo, sans-serif; font-stretch: 125%; font-weight: 800; letter-spacing: 0.06em; color: rgba(242,239,233,0.8);">CONCEPT BUILDER</span>
+      <p style="margin: 0; max-width: 620px; text-wrap: pretty;">This is a demonstration. It isn't connected to real stock, pricing or production data, and the device shapes are illustrative rather than exact models of any manufacturer's hardware.</p>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultBrand&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;NORTHSTAR&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const DEVICES = [
+  { id: 'aio', label: 'All-in-one', short: 'All-in-one', note: 'Single unit' },
+  { id: 'cart', label: '510 cartridge', short: '510 cart', note: 'Threaded tank' },
+  { id: 'batt', label: 'Rechargeable battery', short: 'Battery', note: 'Rechargeable' }
+];
+const FINISHES = [
+  { id: 'black', label: 'Matte black', accent: '#ff7a45', smoke: ['#ff4d2e', '#5b2bff'], swatchBg: 'radial-gradient(circle at 35% 30%, #3a3a3d, #121214 70%)' },
+  { id: 'steel', label: 'Brushed steel', accent: '#7cc8ff', smoke: ['#2f86ff', '#7fe6ff'], swatchBg: 'conic-gradient(from 30deg, #8e9398, #e7eaec, #9a9fa4, #d9dcdf, #8e9398)' },
+  { id: 'rose', label: 'Rose gold', accent: '#ff9bb0', smoke: ['#ff5f8f', '#ffb070'], swatchBg: 'conic-gradient(from 30deg, #b77a66, #f6c9b7, #c48a74, #edb8a4, #b77a66)' },
+  { id: 'olive', label: 'Deep olive', accent: '#bce46f', smoke: ['#8fd14f', '#1f9e84'], swatchBg: 'radial-gradient(circle at 35% 30%, #6c7a52, #353d25 70%)' },
+  { id: 'white', label: 'Ceramic white', accent: '#cdbcff', smoke: ['#9f86ff', '#8fd3ff'], swatchBg: 'radial-gradient(circle at 35% 30%, #ffffff, #dcd6cb 75%)' }
+];
+const PACKS = [
+  { id: 'kraft', label: 'Kraft sleeve' },
+  { id: 'black', label: 'Matte black box' },
+  { id: 'window', label: 'Window box' }
+];
+const STEPS = [
+  { n: '01', title: 'Specify', body: 'Choose your device, finish, brand name and packaging above, then copy the summary.' },
+  { n: '02', title: 'Review', body: 'Your account manager checks it against available options, minimum order quantities and lead times.' },
+  { n: '03', title: 'Sample and produce', body: 'Approve a physical sample, then we move into production.' }
+];
+
+class Component extends DCLogic {
+  state = { device: 'aio', finish: 'black', pack: 'kraft', brand: null, copied: false, showManual: false, ready: false, failed: false };
+  smokeRef = React.createRef();
+  stageRef = React.createRef();
+  manualRef = React.createRef();
+
+  componentDidMount() {
+    const url = new URL('concept-scene.js', document.baseURI).href;
+    import(url).then((mod) => {
+      try {
+        this.smoke = mod.createSmoke(this.smokeRef.current);
+        this.stage = mod.createStage(this.stageRef.current);
+        this.sync();
+        this.setState({ ready: true });
+      } catch (e) { console.error(e); this.setState({ failed: true }); }
+    }).catch((e) => { console.error(e); this.setState({ failed: true }); });
+  }
+  componentDidUpdate() { this.sync(); }
+  componentWillUnmount() { clearTimeout(this._t); this.smoke?.dispose(); this.stage?.dispose(); }
+
+  engraving() {
+    const b = this.state.brand ?? (this.props.defaultBrand ?? 'NORTHSTAR');
+    return b.trim() ? b.trim().toUpperCase() : '—';
+  }
+  sync() {
+    const fin = FINISHES.find(f => f.id === this.state.finish);
+    this.smoke?.setColors(fin.smoke[0], fin.smoke[1]);
+    this.stage?.update({ device: this.state.device, finish: fin.id, engraving: this.engraving(), pack: this.state.pack, accent: fin.accent, smoke: fin.smoke });
+  }
+
+  flashCopied() {
+    clearTimeout(this._t);
+    this.setState({ copied: true, showManual: false });
+    this._t = setTimeout(() => this.setState({ copied: false }), 1800);
+  }
+  async copy(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); return this.flashCopied(); }
+    } catch (e) {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) return this.flashCopied();
+    } catch (e) {}
+    this.setState({ showManual: true, copied: false }, () => { const el = this.manualRef.current; if (el) { el.focus(); el.select(); } });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const brand = s.brand ?? (this.props.defaultBrand ?? 'NORTHSTAR');
+    const engraving = this.engraving();
+    const dev = DEVICES.find(d => d.id === s.device);
+    const fin = FINISHES.find(f => f.id === s.finish);
+    const pack = PACKS.find(p => p.id === s.pack);
+    const rows = [
+      { label: 'Device', value: dev.label },
+      { label: 'Finish', value: fin.label },
+      { label: 'Engraving', value: engraving },
+      { label: 'Packaging', value: pack.label }
+    ];
+    const summaryText = rows.map(r => `${r.label}: ${r.value}`).join('\n');
+    return {
+      accent: fin.accent,
+      smokeRef: this.smokeRef, stageRef: this.stageRef, manualRef: this.manualRef,
+      devices: DEVICES.map(d => {
+        const a = d.id === s.device;
+        return { ...d, checked: a ? 'true' : 'false', bg: a ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.02)', border: a ? 'var(--accent)' : 'rgba(255,255,255,0.1)', pick: () => this.setState({ device: d.id }) };
+      }),
+      finishes: FINISHES.map(f => ({ ...f, checked: f.id === s.finish ? 'true' : 'false', ring: f.id === s.finish ? 'var(--accent)' : 'rgba(255,255,255,0.12)', pick: () => this.setState({ finish: f.id }) })),
+      packs: PACKS.map(p => {
+        const a = p.id === s.pack;
+        return { ...p, checked: a ? 'true' : 'false', bg: a ? '#f2efe9' : 'rgba(255,255,255,0.03)', fg: a ? '#09090b' : '#f2efe9', border: a ? '#f2efe9' : 'rgba(255,255,255,0.14)', pick: () => this.setState({ pack: p.id }) };
+      }),
+      steps: STEPS,
+      deviceLabel: dev.label, finishLabel: fin.label, packLabel: pack.label,
+      brand, brandCount: `${brand.length}/14`,
+      onBrand: (e) => this.setState({ brand: e.target.value.slice(0, 14) }),
+      engraving,
+      stageCaption: `${dev.label} · ${fin.label} · ${pack.label}`,
+      stageAlt: `3D render: ${dev.label} in ${fin.label}, engraved ${engraving}, with ${pack.label}`,
+      loading: !s.ready,
+      loadingText: s.failed ? '3D preview unavailable in this browser' : 'Loading render',
+      specRows: rows, summaryText,
+      copiedOpacity: s.copied ? 1 : 0,
+      showManual: s.showManual,
+      onCopy: () => this.copy(summaryText)
+    };
+  }
+}
+</script>
+</body>
+</html>
