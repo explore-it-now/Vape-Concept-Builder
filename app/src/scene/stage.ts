@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { DeviceId, FinishId, MethodId, PackId, PlacementId } from '../data';
 import { reducedMotion } from './motion';
 
@@ -9,16 +11,18 @@ interface FinishMaterial {
   clearcoat: number;
   clearcoatRoughness: number;
   anisotropy: number;
+  /** Micro-surface: brushed metal streaks, soft-touch grain, or smooth. */
+  surface: 'brushed' | 'grain' | 'smooth';
   /** Dark finishes get light markings, light finishes get dark ones. */
   dark: boolean;
 }
 
 export const FINISH_MAT: Record<FinishId, FinishMaterial> = {
-  black: { color: '#1c1c1e', metalness: 0.2, roughness: 0.62, clearcoat: 0.15, clearcoatRoughness: 0.6, anisotropy: 0, dark: true },
-  steel: { color: '#c3c7cb', metalness: 1, roughness: 0.34, clearcoat: 0, clearcoatRoughness: 0, anisotropy: 0.9, dark: false },
-  rose: { color: '#e6a28c', metalness: 1, roughness: 0.24, clearcoat: 0, clearcoatRoughness: 0, anisotropy: 0.3, dark: false },
-  olive: { color: '#4a5535', metalness: 0.4, roughness: 0.42, clearcoat: 0.6, clearcoatRoughness: 0.3, anisotropy: 0, dark: true },
-  white: { color: '#f1ede5', metalness: 0, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08, anisotropy: 0, dark: false },
+  black: { color: '#1c1c1e', metalness: 0.15, roughness: 0.7, clearcoat: 0.1, clearcoatRoughness: 0.6, anisotropy: 0, surface: 'grain', dark: true },
+  steel: { color: '#c3c7cb', metalness: 1, roughness: 0.36, clearcoat: 0, clearcoatRoughness: 0, anisotropy: 0.9, surface: 'brushed', dark: false },
+  rose: { color: '#e6a28c', metalness: 1, roughness: 0.26, clearcoat: 0, clearcoatRoughness: 0, anisotropy: 0.5, surface: 'brushed', dark: false },
+  olive: { color: '#4a5535', metalness: 0.35, roughness: 0.46, clearcoat: 0.6, clearcoatRoughness: 0.3, anisotropy: 0, surface: 'grain', dark: true },
+  white: { color: '#f1ede5', metalness: 0, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.06, anisotropy: 0, surface: 'smooth', dark: false },
 };
 
 export interface StageInput {
@@ -71,16 +75,135 @@ function envMap(renderer: THREE.WebGLRenderer, c1: string, c2: string) {
     scene.add(m);
     disposables.push(m.geometry, m.material);
   };
-  panel(5, 12, '#ffffff', 4, [-8, 2, 5]);
-  panel(3, 12, c1, 3.2, [8, 1, 3]);
-  panel(12, 3, '#ffffff', 1.8, [0, 9, 1]);
+  // Studio rig: big key softbox, narrow strip lights for crisp vertical highlights
+  // on the metal, a top light, coloured rim/back panels, and a dim floor bounce.
+  panel(6, 10, '#ffffff', 3.6, [-7, 3, 6]);
+  panel(1.2, 12, '#ffffff', 6, [-4, 1, 8]);
+  panel(4, 8, '#ffffff', 1.2, [7, 1, 6]);
+  panel(14, 2, '#ffffff', 2.5, [0, 10, 0]);
+  panel(1.5, 12, c1, 4, [8, 1, -3]);
   panel(10, 6, c2, 2.2, [-2, -1, -9]);
-  panel(2.5, 9, '#ffffff', 1.6, [4, 0, 9]);
+  panel(1, 10, '#ffffff', 3, [3.5, 0, 9]);
+  panel(20, 20, '#d8cfc4', 0.18, [0, -8, 0]);
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const rt = pmrem.fromScene(scene, 0.035);
+  const rt = pmrem.fromScene(scene, 0.02);
   pmrem.dispose();
   disposables.forEach((d) => d.dispose());
   return rt;
+}
+
+/** Fine random grain, used as a roughness/bump map for soft-touch coatings. */
+function grainTex() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d')!;
+  const img = g.createImageData(256, 256);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = 205 + Math.random() * 50;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+    img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(3, 6);
+  return t;
+}
+
+/** Streaks running around the circumference, like lathe-brushed metal. */
+function brushedTex() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  const g = c.getContext('2d')!;
+  g.fillStyle = 'rgb(215,215,215)';
+  g.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 3000; i++) {
+    const v = 140 + Math.random() * 115;
+    g.fillStyle = `rgba(${v},${v},${v},0.18)`;
+    g.fillRect(Math.random() * 512 - 100, Math.random() * 512, 60 + Math.random() * 400, 1);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(1, 3);
+  return t;
+}
+
+/** Lathe profile for a cylinder with rounded bottom (rb) and top (rt) edges. */
+function roundedCyl(r: number, h: number, rb: number, rt: number, segs = 96) {
+  const pts: THREE.Vector2[] = [new THREE.Vector2(0, 0)];
+  const n = 8;
+  for (let i = 0; i <= n; i++) {
+    const a = -Math.PI / 2 + (i / n) * (Math.PI / 2);
+    pts.push(new THREE.Vector2(r - rb + rb * Math.cos(a), rb + rb * Math.sin(a)));
+  }
+  for (let i = 0; i <= n; i++) {
+    const a = (i / n) * (Math.PI / 2);
+    pts.push(new THREE.Vector2(r - rt + rt * Math.cos(a), h - rt + rt * Math.sin(a)));
+  }
+  pts.push(new THREE.Vector2(0, h));
+  return new THREE.LatheGeometry(pts, segs);
+}
+
+const lathe = (pts: [number, number][], segs = 96) => new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), segs);
+
+function roundedRect(w: number, h: number, r: number) {
+  const s = new THREE.Shape();
+  s.moveTo(-w + r, -h);
+  s.lineTo(w - r, -h);
+  s.absarc(w - r, -h + r, r, -Math.PI / 2, 0, false);
+  s.lineTo(w, h - r);
+  s.absarc(w - r, h - r, r, 0, Math.PI / 2, false);
+  s.lineTo(-w + r, h);
+  s.absarc(-w + r, h - r, r, Math.PI / 2, Math.PI, false);
+  s.lineTo(-w, -h + r);
+  s.absarc(-w + r, -h + r, r, Math.PI, Math.PI * 1.5, false);
+  return s;
+}
+
+/**
+ * Rounded-rectangle prism standing upright (Y up), with bevelled top and bottom
+ * edges and smooth normals. `taper` narrows the top: [x, z] scale at the top.
+ */
+function pod(halfW: number, halfD: number, r: number, height: number, bevel: number, taper: [number, number] = [1, 1]) {
+  const body = new THREE.ExtrudeGeometry(roundedRect(halfW - bevel * 0.6, halfD - bevel * 0.6, r), {
+    depth: height - bevel * 2, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel * 0.6, bevelSegments: 8, curveSegments: 32,
+  });
+  body.rotateX(-Math.PI / 2);
+  body.translate(0, bevel, 0);
+  body.deleteAttribute('normal');
+  body.deleteAttribute('uv');
+  const geo = mergeVertices(body, 1e-4);
+  body.dispose();
+  geo.clearGroups();
+  const pos = geo.attributes.position;
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) {
+    const t = pos.getY(i) / height;
+    pos.setX(i, pos.getX(i) * (1 + (taper[0] - 1) * t));
+    pos.setZ(i, pos.getZ(i) * (1 + (taper[1] - 1) * t));
+    uv[i * 2] = Math.atan2(pos.getX(i), pos.getZ(i)) / (Math.PI * 2) + 0.5;
+    uv[i * 2 + 1] = t;
+  }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/** Helical thread, as a tube wound around the Y axis. */
+class Helix extends THREE.Curve<THREE.Vector3> {
+  r: number;
+  h: number;
+  turns: number;
+  constructor(r: number, h: number, turns: number) {
+    super();
+    this.r = r;
+    this.h = h;
+    this.turns = turns;
+  }
+  getPoint(t: number, target = new THREE.Vector3()) {
+    const a = t * this.turns * Math.PI * 2;
+    return target.set(Math.cos(a) * this.r, t * this.h, Math.sin(a) * this.r);
+  }
 }
 
 function radialTex() {
@@ -104,21 +227,32 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   renderer.setClearColor(0x000000, 0);
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 100);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const key = new THREE.DirectionalLight(0xffffff, 1.3);
   key.position.set(-4, 6, 6);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  Object.assign(key.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 1, far: 20 });
+  key.shadow.bias = -0.0004;
+  key.shadow.normalBias = 0.02;
   scene.add(key);
   const rim = new THREE.DirectionalLight(0xffffff, 1.6);
   rim.position.set(5, 2, -4);
   scene.add(rim);
 
   const finishMat = new THREE.MeshPhysicalMaterial();
+  const grain = grainTex();
+  const brushed = brushedTex();
   const plastic = new THREE.MeshPhysicalMaterial({ color: 0x0f0f11, roughness: 0.26, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.12 });
-  const silver = new THREE.MeshStandardMaterial({ color: 0xd8d8d8, metalness: 1, roughness: 0.22 });
-  const glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.03, transmission: 1, thickness: 0.2, ior: 1.45 });
-  const oil = new THREE.MeshPhysicalMaterial({
-    color: 0xf0a531, roughness: 0.12, transmission: 0.6, thickness: 0.6, ior: 1.47,
-    attenuationColor: new THREE.Color(0xa85a05), attenuationDistance: 0.5,
-  });
+  const silver = new THREE.MeshPhysicalMaterial({ color: 0xd8d8d8, metalness: 1, roughness: 0.2, roughnessMap: brushed, anisotropy: 0.6 });
+  const gold = new THREE.MeshStandardMaterial({ color: 0xe2b561, metalness: 1, roughness: 0.22 });
+  const gap = new THREE.MeshStandardMaterial({ color: 0x050506, roughness: 0.7 });
+  const glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.02, transmission: 1, thickness: 0.12, ior: 1.5, specularIntensity: 1 });
+  // Oil is opaque-with-glow rather than transmissive: transmissive surfaces can't see
+  // each other, so a transmissive oil would vanish behind the glass.
+  const oil = new THREE.MeshPhysicalMaterial({ color: 0xd98a1c, emissive: 0x5a2600, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05 });
+  const bubble = new THREE.MeshPhysicalMaterial({ color: 0xffe9b8, roughness: 0.05, clearcoat: 1, transparent: true, opacity: 0.75 });
   const led = new THREE.MeshBasicMaterial({ color: 0xffffff });
   led.toneMapped = false;
 
@@ -147,52 +281,52 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
     m.position.set(x, y, z);
     return m;
   };
-  const ring = (r: number, y: number, grp: THREE.Group) =>
-    grp.add(mesh(new THREE.TorusGeometry(r, 0.012, 8, 48).rotateX(Math.PI / 2), plastic, 0, y, 0));
 
-  // All-in-one
+  // All-in-one: flat-fronted rounded pod with a tapered mouthpiece.
   const aio = new THREE.Group();
-  aio.add(mesh(new THREE.CapsuleGeometry(0.62, 2.7, 24, 64).scale(1, 1, 0.5), finishMat, 0, -0.3, 0));
-  aio.add(mesh(new THREE.CapsuleGeometry(0.34, 0.5, 16, 48).scale(1, 1, 0.55), plastic, 0, 1.95, 0));
-  aio.add(mesh(new THREE.BoxGeometry(0.24, 0.025, 0.02), led, 0, -1.95, 0.305));
-  {
-    // Plane bent to follow the flattened capsule's front face.
-    const g = new THREE.PlaneGeometry(0.4, 1.6, 16, 1);
-    const pos = g.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i);
-      pos.setZ(i, 0.31 * Math.sqrt(Math.max(0, 1 - (x / 0.62) ** 2)) + 0.002);
-    }
-    decal(aio, mesh(g, engraveMat, 0, -0.25, 0));
-  }
+  aio.add(mesh(pod(0.6, 0.3, 0.2, 3.7, 0.07), finishMat, 0, -2.2, 0));
+  aio.add(mesh(pod(0.36, 0.17, 0.12, 0.05, 0.01), gap, 0, 1.48, 0));
+  aio.add(mesh(pod(0.36, 0.17, 0.13, 0.62, 0.06, [0.78, 0.8]), plastic, 0, 1.52, 0));
+  aio.add(mesh(new RoundedBoxGeometry(0.2, 0.02, 0.05, 2, 0.009), gap, 0, 2.135, 0));
+  aio.add(mesh(new RoundedBoxGeometry(0.22, 0.022, 0.02, 2, 0.008), led, 0, -1.8, 0.3));
+  aio.add(mesh(new RoundedBoxGeometry(0.16, 0.055, 0.02, 3, 0.026), gap, 0, -2.2, 0).rotateX(Math.PI / 2));
+  decal(aio, mesh(new THREE.PlaneGeometry(0.4, 1.6), engraveMat, 0, -0.35, 0.302));
 
-  // 510 cartridge
+  // 510 cartridge: threaded base, finished sleeve, thick glass tank with oil, mouthpiece.
   const cart = new THREE.Group();
-  cart.add(mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.3, 48), silver, 0, -2.1, 0));
-  for (let i = 0; i < 4; i++) cart.add(mesh(new THREE.TorusGeometry(0.2, 0.012, 8, 40).rotateX(Math.PI / 2), silver, 0, -2.2 + i * 0.07, 0));
-  cart.add(mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.5, 96), finishMat, 0, -1.2, 0));
-  cart.add(mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.6, 96, 1, true), glass, 0, 0.35, 0));
-  cart.add(mesh(new THREE.CylinderGeometry(0.34, 0.34, 1.05, 64), oil, 0, 0.02, 0));
-  cart.add(mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.6, 24), silver, 0, 0.35, 0));
-  cart.add(mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.12, 96), finishMat, 0, 1.21, 0));
+  cart.add(mesh(lathe([[0, 0], [0.15, 0], [0.17, 0.02], [0.17, 0.27], [0.21, 0.29], [0.21, 0.33], [0, 0.33]]), silver, 0, -2.26, 0));
+  cart.add(mesh(new THREE.TubeGeometry(new Helix(0.172, 0.2, 5), 240, 0.014, 6), silver, 0, -2.21, 0));
+  cart.add(mesh(roundedCyl(0.42, 1.5, 0.05, 0.03), finishMat, 0, -1.95, 0));
+  cart.add(mesh(roundedCyl(0.41, 0.05, 0.01, 0.01), silver, 0, -0.45, 0));
+  cart.add(mesh(lathe([[0.355, 0], [0.398, 0], [0.4, 0.004], [0.4, 1.546], [0.398, 1.55], [0.357, 1.55], [0.355, 1.546], [0.355, 0.004], [0.355, 0]]), glass, 0, -0.4, 0));
+  cart.add(mesh(lathe([[0, 0], [0.35, 0], [0.35, 1.12], [0.3, 1.095], [0.18, 1.083], [0, 1.08]], 64), oil, 0, -0.4, 0));
+  cart.add(mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.55, 32), silver, 0, 0.375, 0));
+  cart.add(mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.125, 16).rotateZ(Math.PI / 2), gap, 0, -0.22, 0));
+  cart.add(mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.125, 16).rotateX(Math.PI / 2), gap, 0, -0.22, 0));
+  cart.add(mesh(new THREE.SphereGeometry(0.03, 16, 12), bubble, 0.25, 0.1, 0.25));
+  cart.add(mesh(new THREE.SphereGeometry(0.018, 16, 12), bubble, -0.2, 0.4, 0.29));
+  cart.add(mesh(new THREE.SphereGeometry(0.024, 16, 12), bubble, 0.06, -0.12, 0.345));
+  cart.add(mesh(roundedCyl(0.42, 0.12, 0.02, 0.03), finishMat, 0, 1.15, 0));
+  cart.add(mesh(lathe([[0, 0], [0.36, 0], [0.36, 0.08], [0.33, 0.35], [0.27, 0.7], [0.2, 0.86], [0.12, 0.9], [0, 0.9]]), finishMat, 0, 1.27, 0));
+  cart.add(mesh(new THREE.CircleGeometry(0.06, 32).rotateX(-Math.PI / 2), gap, 0, 2.172, 0));
   {
-    const pts = [[0, 0], [0.36, 0], [0.36, 0.08], [0.33, 0.35], [0.27, 0.7], [0.2, 0.86], [0.12, 0.9], [0, 0.9]].map(([x, y]) => new THREE.Vector2(x, y));
-    cart.add(mesh(new THREE.LatheGeometry(pts, 96), finishMat, 0, 1.27, 0));
     const L = 0.325 / 0.425;
     decal(cart, mesh(new THREE.CylinderGeometry(0.4245, 0.4245, 1.3, 48, 1, true, -L / 2, L), engraveMat, 0, -1.2, 0));
   }
-  ring(0.421, -0.45, cart);
 
-  // Rechargeable battery
+  // Rechargeable battery: rounded tube, 510 connector with gold pin, fire button, USB-C.
   const batt = new THREE.Group();
-  batt.add(mesh(new THREE.CylinderGeometry(0.34, 0.34, 3.6, 96), finishMat, 0, -0.4, 0));
-  batt.add(mesh(new THREE.SphereGeometry(0.34, 64, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1, 0.18, 1), finishMat, 0, -2.2, 0));
-  batt.add(mesh(new THREE.CylinderGeometry(0.33, 0.34, 0.05, 96), silver, 0, 1.425, 0));
-  batt.add(mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.24, 48), silver, 0, 1.57, 0));
-  for (let i = 0; i < 3; i++) batt.add(mesh(new THREE.TorusGeometry(0.19, 0.01, 8, 40).rotateX(Math.PI / 2), silver, 0, 1.5 + i * 0.06, 0));
+  batt.add(mesh(roundedCyl(0.34, 3.62, 0.07, 0.02), finishMat, 0, -2.22, 0));
+  batt.add(mesh(lathe([[0, 0], [0.335, 0], [0.335, 0.03], [0.32, 0.05], [0.21, 0.06], [0.2, 0.08], [0.2, 0.26], [0.19, 0.27], [0.15, 0.27], [0.15, 0.2], [0, 0.2]]), silver, 0, 1.4, 0));
+  for (let i = 0; i < 3; i++) batt.add(mesh(new THREE.TorusGeometry(0.2, 0.006, 8, 64).rotateX(Math.PI / 2), gap, 0, 1.52 + i * 0.05, 0));
+  batt.add(mesh(new THREE.CircleGeometry(0.15, 48).rotateX(-Math.PI / 2), gap, 0, 1.601, 0));
+  batt.add(mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.05, 24), gold, 0, 1.625, 0));
+  batt.add(mesh(new THREE.TorusGeometry(0.125, 0.018, 16, 48), silver, 0, 0.8, 0.335));
+  batt.add(mesh(new THREE.CylinderGeometry(0.1, 0.105, 0.05, 40).rotateX(Math.PI / 2), silver, 0, 0.8, 0.34));
+  batt.add(mesh(new THREE.TorusGeometry(0.148, 0.008, 12, 48), led, 0, 0.8, 0.33));
+  batt.add(mesh(new RoundedBoxGeometry(0.17, 0.06, 0.04, 4, 0.028), gap, 0, -1.95, 0.33));
+  batt.add(mesh(new RoundedBoxGeometry(0.11, 0.015, 0.02, 2, 0.007), silver, 0, -1.95, 0.342));
   {
-    batt.add(mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.06, 40).rotateX(Math.PI / 2), silver, 0, 0.8, 0.335));
-    batt.add(mesh(new THREE.TorusGeometry(0.135, 0.014, 12, 48), led, 0, 0.8, 0.335));
     const L = 0.45 / 0.345;
     decal(batt, mesh(new THREE.CylinderGeometry(0.3445, 0.3445, 1.8, 48, 1, true, -L / 2, L), engraveMat, 0, -0.7, 0));
   }
@@ -219,10 +353,21 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   sTex.colorSpace = THREE.SRGBColorSpace;
   const boxFront = new THREE.MeshPhysicalMaterial({ map: pTex, roughness: 0.8 });
   const boxSide = new THREE.MeshPhysicalMaterial({ map: sTex, roughness: 0.8 });
-  const box = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.2, 0.8), [boxSide, boxSide, boxSide, boxSide, boxFront, boxSide]);
+  const box = new THREE.Mesh(new RoundedBoxGeometry(1.5, 2.2, 0.8, 4, 0.025), [boxSide, boxSide, boxSide, boxSide, boxFront, boxSide]);
   box.position.set(1.55, -1.15, -0.9);
   box.rotation.y = -0.42;
   scene.add(box);
+
+  // Cast shadows from everything solid onto an invisible floor.
+  const noShadow = new Set<THREE.Material>([engraveMat, led, glass, bubble]);
+  [deviceRoot, box].forEach((root) => root.traverse((o) => {
+    if (o instanceof THREE.Mesh) o.castShadow = !noShadow.has(o.material as THREE.Material);
+  }));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: 0.3 }));
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -2.272;
+  floor.receiveShadow = true;
+  scene.add(floor);
 
   const shadowTex = radialTex();
   const shadow = (w: number, d: number, x: number, z: number) => {
@@ -517,6 +662,9 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
         finishMat.clearcoat = f.clearcoat;
         finishMat.clearcoatRoughness = f.clearcoatRoughness;
         finishMat.anisotropy = f.anisotropy;
+        finishMat.roughnessMap = f.surface === 'brushed' ? brushed : f.surface === 'grain' ? grain : null;
+        finishMat.bumpMap = f.surface === 'grain' ? grain : null;
+        finishMat.bumpScale = 0.5;
         finishMat.needsUpdate = true;
         env?.dispose();
         env = envMap(renderer, next.smoke[0], next.smoke[1]);
@@ -580,8 +728,8 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
       scene.traverse((o) => {
         if (o instanceof THREE.Mesh) o.geometry.dispose();
       });
-      [finishMat, plastic, silver, glass, oil, led, engraveMat, boxFront, boxSide].forEach((m) => m.dispose());
-      [eTex, pTex, sTex, shadowTex].forEach((tx) => tx.dispose());
+      [finishMat, plastic, silver, gold, gap, glass, oil, bubble, led, engraveMat, boxFront, boxSide, floor.material].forEach((m) => m.dispose());
+      [eTex, pTex, sTex, shadowTex, grain, brushed].forEach((tx) => tx.dispose());
       env?.dispose();
       renderer.dispose();
     },
