@@ -3,6 +3,9 @@ import type { SpecRow } from '../data';
 const esc = (t: string) =>
   String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
+/** False in hosts that block the print dialog (e.g. the claude.ai artifact preview build). */
+export const canPrint = import.meta.env.VITE_NO_PRINT !== '1';
+
 interface SheetInput {
   title: string;
   ref: string;

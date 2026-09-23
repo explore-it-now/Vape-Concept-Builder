@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SpecRow } from '../data';
 import { copyText } from '../lib/clipboard';
+import { canPrint } from '../lib/specSheet';
 import { Copy, FileDown } from './icons';
 
 interface Props {
@@ -46,10 +47,12 @@ export function SpecBar({ rows, onSheet }: Props) {
         ))}
         <div className="spec__actions">
           <span role="status" className="copied" style={{ opacity: copied ? 1 : 0 }}>{copied ? 'Copied' : ''}</span>
-          <button type="button" className="btn-outline" onClick={onSheet}>
-            <FileDown />
-            Spec sheet (PDF)
-          </button>
+          {canPrint && (
+            <button type="button" className="btn-outline" onClick={onSheet}>
+              <FileDown />
+              Spec sheet (PDF)
+            </button>
+          )}
           <button type="button" className="btn-outline" onClick={onCopy}>
             <Copy />
             Copy summary

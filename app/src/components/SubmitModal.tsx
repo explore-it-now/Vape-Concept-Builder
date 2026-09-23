@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { QUANTITIES } from '../data';
+import { canPrint } from '../lib/specSheet';
 import { ArrowRight, Check, Close } from './icons';
 import { RadioGroup } from './RadioGroup';
 
@@ -173,7 +174,7 @@ export function SubmitModal({ open, onClose, chips, refCode, onSheet }: Props) {
               </span>
             </div>
             <div className="thanks__actions">
-              <button type="button" className="btn-outline" onClick={onSheet}>Download spec sheet</button>
+              {canPrint && <button type="button" className="btn-outline" onClick={onSheet}>Download spec sheet</button>}
               <button type="button" className="btn-light" onClick={close}>Back to builder</button>
             </div>
             <span className="demo-note">Demo only. Nothing was sent or stored.</span>
