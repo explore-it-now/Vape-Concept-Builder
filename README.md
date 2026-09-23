@@ -2,7 +2,7 @@
 
 Interactive 3D configurator for custom-branded vape hardware: pick a device, finish, brand marking and packaging, see it live in 3D, then submit the concept.
 
-**Live demo:** https://explore-it-now.github.io/vape-concept-builder/
+**Live demo:** https://explore-it-now.github.io/Vape-Concept-Builder/
 
 - `app/` is the website (React, TypeScript, Vite, three.js). Run it locally with `cd app && npm install && npm run dev`.
 - `project/` and `chats/` hold the original Claude Design prototype, its handoff notes and the design conversation.
