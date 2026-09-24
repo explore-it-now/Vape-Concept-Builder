@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { CSSProperties, RefObject } from 'react';
 import type { SceneStatus } from '../scene/useScene';
 import { Rotate } from './icons';
 
@@ -19,7 +19,7 @@ export function Preview({ canvasRef, status, engraving, caption, alt }: Props) {
       <canvas ref={canvasRef} className="preview__canvas" role="img" aria-label={alt} />
       <div className="preview__top mono-label">
         <span><span className="live-dot" />Live render</span>
-        <span><Rotate />Drag to rotate</span>
+        <span><Rotate /><span className="only-fine">Drag to rotate</span><span className="only-touch">Swipe to rotate</span></span>
       </div>
       {status !== 'ready' && (
         <div className="preview__loading mono-label">
@@ -42,7 +42,7 @@ export function Preview({ canvasRef, status, engraving, caption, alt }: Props) {
         </svg>
       </div>
       <div aria-hidden="true" className="sticker">
-        <span style={{ fontSize: stickerSize }}>
+        <span style={{ '--sticker-size': `${stickerSize}px` } as CSSProperties}>
           made for<br />
           {stickerName}
         </span>

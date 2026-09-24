@@ -36,6 +36,22 @@ ${image ? `<img src="${image}" style="max-width:100%;max-height:100%;display:blo
 <p style="margin:16px 0 0;font-size:10pt;color:#55555c;line-height:1.5">This concept is illustrative. Device shapes are not to scale and are not exact models of any manufacturer's hardware. Pricing, minimum order quantities and turnaround times are confirmed by your account manager.</p>
 </body></html>`;
 
+  // Phones/tablets: print() from a hidden iframe is unreliable on iOS and Android, so open
+  // the sheet in its own tab (opened synchronously inside the tap, so it isn't blocked).
+  // The tab then opens the print sheet, where "Save as PDF" / "Save to Files" is offered.
+  if (matchMedia('(hover: none) and (pointer: coarse)').matches) {
+    const tab = window.open('', '_blank');
+    if (tab) {
+      const mobileHtml = html
+        .replace('<meta charset="utf-8">', '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">')
+        .replace('</body>', '<script>addEventListener("load",function(){setTimeout(function(){print()},600)})</script></body>');
+      tab.document.open();
+      tab.document.write(mobileHtml);
+      tab.document.close();
+      return;
+    }
+  }
+
   const frame = document.createElement('iframe');
   frame.setAttribute('aria-hidden', 'true');
   frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';

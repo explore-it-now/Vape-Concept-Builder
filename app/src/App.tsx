@@ -62,13 +62,12 @@ export default function App() {
 
       <main>
         <section id="builder" className="wrap builder">
+          {/* Desktop: two columns (hero + options | preview + summary).
+              Mobile: one column, with the preview pinned above the options while they scroll. */}
           <div className="builder__grid">
-            <div className="builder__left">
-              <Hero />
-              <ConfigPanel concept={concept} update={update} onSubmit={openSubmit} />
-            </div>
+            <Hero />
 
-            <div className="builder__right">
+            <div className="configurator">
               <Preview
                 canvasRef={stageRef}
                 status={status}
@@ -76,6 +75,10 @@ export default function App() {
                 caption={`${device.label} · ${finish.label} · ${pack.label}`}
                 alt={`3D render: ${device.label} in ${finish.label}, ${concept.method} ${engraving}, with ${pack.label}`}
               />
+              <ConfigPanel concept={concept} update={update} onSubmit={openSubmit} />
+            </div>
+
+            <div className="builder__summary">
               <SpecBar rows={rows} onSheet={onSheet} />
               <p className="fineprint">Turnaround times are illustrative until confirmed by your account manager.</p>
             </div>

@@ -1,5 +1,5 @@
 import { Color } from 'three';
-import { reducedMotion } from './motion';
+import { isTouchDevice, reducedMotion } from './motion';
 
 export interface Smoke {
   setColors(a: string, b: string): void;
@@ -74,7 +74,7 @@ export function createSmoke(canvas: HTMLCanvasElement): Smoke {
   };
   addEventListener('pointermove', onMove, { passive: true });
 
-  const scale = 0.5;
+  const scale = isTouchDevice ? 0.35 : 0.5;
   const resize = () => {
     const w = Math.max(1, Math.floor(innerWidth * scale));
     const h = Math.max(1, Math.floor(innerHeight * scale));

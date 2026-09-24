@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { DeviceId, FinishId, MethodId, PackId, PlacementId } from '../data';
-import { reducedMotion } from './motion';
+import { isTouchDevice, reducedMotion } from './motion';
 
 interface FinishMaterial {
   color: string;
@@ -221,7 +221,7 @@ function radialTex() {
 
 export function createStage(canvas: HTMLCanvasElement): Stage {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: false });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, isTouchDevice ? 1.75 : 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.setClearColor(0x000000, 0);
@@ -232,7 +232,7 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   const key = new THREE.DirectionalLight(0xffffff, 1.3);
   key.position.set(-4, 6, 6);
   key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.mapSize.setScalar(isTouchDevice ? 1024 : 2048);
   Object.assign(key.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 1, far: 20 });
   key.shadow.bias = -0.0004;
   key.shadow.normalBias = 0.02;
