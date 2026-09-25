@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build recorder: records the real screen while you build with Claude (Claude Design,
+Develop product recording: records the real screen while you build with Claude (Claude Design,
 claude.ai chat, Claude Code), then edits it into a clean, silent walkthrough ready for
 a voiceover: idle time cut, generation fast-forwarded, zoom on every click, section
 title cards, and the finished product demo appended.

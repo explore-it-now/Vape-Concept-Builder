@@ -1,9 +1,9 @@
 ---
-name: build-recorder
-description: Records the user's real screen while they build an app, website, tool, dashboard, AI tool or any software with Claude (Claude Design, claude.ai chat and Claude Code), then edits it into a clean, silent step-by-step video ready for a voiceover. Idle time is cut, Claude's generation is fast-forwarded, every click is zoomed in, section title cards are added, and an end-to-end demo of the finished product is appended, plus a timestamped shot list. Use when the user says "start build recording", "record this build", "record what I'm building", invokes /build-recorder, or asks for a video showing how something was built. Also use when they say "stop recording", "make the build video" or "add a marker".
+name: develop-product-recording
+description: Records the user's real screen while they build an app, website, tool, dashboard, AI tool or any software with Claude (Claude Design, claude.ai chat and Claude Code), then edits it into a clean, silent step-by-step video ready for a voiceover. Idle time is cut, Claude's generation is fast-forwarded, every click is zoomed in, section title cards are added, and an end-to-end demo of the finished product is appended, plus a timestamped shot list. Use when the user says "develop product recording", "start product recording", "start build recording", "record this build", "record what I'm building", invokes /develop-product-recording, or asks for a video showing how something was built. Also use when they say "stop recording", "make the build video" or "add a marker".
 ---
 
-# Build recorder
+# Develop product recording
 
 Turn a real build session into a voiceover-ready video:
 
