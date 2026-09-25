@@ -8,7 +8,7 @@ title cards, and the finished product demo appended.
 Standard library only. Needs ffmpeg (brew/winget/apt, or `pip install imageio-ffmpeg`).
 
   rec.py doctor                      check ffmpeg, screen access, cursor tracking
-  rec.py start  [--dir D]            start recording the screen + cursor/clicks
+  rec.py start  [--polish type|paste] start recording (+ live prompt polishing on a hotkey)
   rec.py mark   "text" [--kind K]    add a marker (K = section | step | prompt)
   rec.py status                      is it recording? how long?
   rec.py pause  [--trim 8]           pause (e.g. while writing a rough prompt); cuts the last 8 s
@@ -267,6 +267,16 @@ def cmd_doctor(a):
         has = "Capture screen" in listing
         print("✓ screen capture device found" if has else "✗ no screen capture device: grant Screen Recording permission to your terminal/Claude app")
         ok &= has
+    try:
+        import pynput  # noqa: F401
+        has_pynput = True
+    except Exception:
+        has_pynput = False
+    print("✓ live polish: pynput installed" if has_pynput else "~ live polish unavailable: pip install pynput")
+    print(("✓ live polish: Claude Code CLI " + shutil.which("claude")) if shutil.which("claude") or os.environ.get("BUILD_REC_POLISH_CMD")
+          else "~ live polish needs the `claude` CLI on PATH")
+    if SYSTEM == "Darwin":
+        print("  macOS: live polish also needs Accessibility + Input Monitoring for this app (Privacy & Security)")
     print("READY" if ok else "NOT READY")
     sys.exit(0 if ok else 1)
 
@@ -294,7 +304,14 @@ def cmd_start(a):
     lg = spawn_detached([sys.executable, os.path.abspath(__file__), "_logger", "--dir", d], open(os.path.join(d, "logger.log"), "a"))
     parts = (st or {}).get("parts", [])
     parts.append({"video": video, "start": t0})
-    st = {"start": (st or {}).get("start", t0), "ffmpeg_pid": proc.pid, "logger_pid": lg.pid, "parts": parts, "system": SYSTEM}
+    polish = getattr(a, "polish", None) or (st or {}).get("polish")
+    pol_pid = None
+    if polish:
+        pol = spawn_detached([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "polish.py"),
+                              "--dir", d, "--mode", polish], open(os.path.join(d, "polish.log"), "a"))
+        pol_pid = pol.pid
+    st = {"start": (st or {}).get("start", t0), "ffmpeg_pid": proc.pid, "logger_pid": lg.pid, "polish_pid": pol_pid,
+          "polish": polish, "parts": parts, "system": SYSTEM}
     save_state(d, st)
     time.sleep(3)
     if not alive(proc.pid) or not os.path.exists(video):
@@ -303,6 +320,14 @@ def cmd_start(a):
             ("\nOn macOS: allow Screen Recording for your terminal/Claude app in System Settings → Privacy & Security, then retry."
              if SYSTEM == "Darwin" else ""))
     print(f"RECORDING → {video}")
+    if polish:
+        time.sleep(1)
+        if not alive(pol_pid):
+            print("WARNING: live polisher did not start; see polish.log (pip install pynput; macOS needs "
+                  "Accessibility + Input Monitoring permission).")
+        else:
+            hk = "Cmd+Option+P" if SYSTEM == "Darwin" else "Ctrl+Alt+P"
+            print(f"LIVE POLISH ON ({polish} mode): type a rough prompt, press {hk}.")
     print("Tip: turn on Do Not Disturb; the whole screen is recorded.")
 
 
@@ -485,6 +510,26 @@ def classify(dur, frozen, events, clicks, args):
     return merged
 
 
+def subtract(segs, cuts):
+    """Remove cut intervals from classified segments."""
+    out = []
+    for s, e, kind in segs:
+        pieces = [(s, e)]
+        for cs, ce in cuts:
+            nxt = []
+            for a0, a1 in pieces:
+                if ce <= a0 or cs >= a1:
+                    nxt.append((a0, a1))
+                else:
+                    if cs > a0:
+                        nxt.append((a0, cs))
+                    if ce < a1:
+                        nxt.append((ce, a1))
+            pieces = nxt
+        out += [[a0, a1, kind] for a0, a1 in pieces if a1 - a0 > 0.2]
+    return out
+
+
 def zoom_windows(clicks, t0, t1, W, H, sx, sy, zoom):
     """Click zoom windows inside [t0, t1] as (start, end, cx, cy) in video pixels."""
     out = []
@@ -586,6 +631,7 @@ def cmd_edit(a):
     if alive(st.get("ffmpeg_pid")):
         die("Still recording. Run `rec.py stop` first.")
     markers = load_jsonl(os.path.join(d, "markers.jsonl"))
+    polishes = load_jsonl(os.path.join(d, "polish.jsonl"))
     events = load_jsonl(os.path.join(d, "input.jsonl"))
     meta = {}
     try:
@@ -634,6 +680,14 @@ def cmd_edit(a):
         sx, sy = W / size[0], H / size[1]
         mk = sorted([dict(m, t=m["t"] - p0) for m in markers if p0 - 2 <= m["t"] <= p1 + 2], key=lambda m: m["t"])
         segs = classify(dur, freeze_intervals(ff, src), ev, clicks, a)
+        # Live polish: cut from where the rough prompt was started until the polished one appears.
+        cuts = [(p["t_rough"] - p0 - 0.3, p["t_out_start"] - p0) for p in polishes
+                if "t_out_start" in p and p0 - 5 <= p["t_hotkey"] <= p1 + 1]
+        segs = subtract(segs, cuts)
+        for p in polishes:
+            if "t_out_start" in p and p0 - 5 <= p["t_hotkey"] <= p1 + 1:
+                mk.append({"t": p["t_out_start"] - p0 + 0.01, "kind": "prompt", "text": p["polished"].splitlines()[0][:90]})
+        mk.sort(key=lambda m: m["t"])
         # Section cards are inserted where section markers fall.
         sec_marks = [m for m in mk if m["kind"] == "section"]
         for s, e, kind in segs:
@@ -725,12 +779,14 @@ def main():
         return p
 
     with_dir(sub.add_parser("doctor"))
-    with_dir(sub.add_parser("start"))
+    sp = with_dir(sub.add_parser("start"))
+    sp.add_argument("--polish", choices=["type", "paste"], help="live prompt polishing: hotkey rewrites the prompt in place")
     with_dir(sub.add_parser("status"))
     with_dir(sub.add_parser("stop"))
     pz = with_dir(sub.add_parser("pause"))
     pz.add_argument("--trim", type=float, default=8.0, help="seconds cut from just before the pause")
-    with_dir(sub.add_parser("resume"))
+    rs = with_dir(sub.add_parser("resume"))
+    rs.add_argument("--polish", choices=["type", "paste"])
     cl = with_dir(sub.add_parser("clip"))
     cl.add_argument("text", nargs="?")
     cl.add_argument("--file")

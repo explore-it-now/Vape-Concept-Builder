@@ -28,13 +28,34 @@ The recorder captures the screen of the machine Claude Code runs on. It works in
    `reference/prompt-playbook.md`, write `build-recording/prompt-script.md` (4-9 structured prompts
    for Claude Design then Claude Code, in order), and show it to the user. They paste these into the
    real tools during the recording. Skip if they'd rather prompt freely.
-4. Run `REC start`, then `REC mark "<first stage, e.g. Claude Design>" --kind section`.
+4. Run `REC start --polish type` (live polish on; plain `REC start` if they don't want it), then `REC mark "<first stage, e.g. Claude Design>" --kind section`.
 5. Tell the user, briefly:
    - The whole main screen is being recorded (not audio). Turn on Do Not Disturb and close anything private.
    - Work normally in Claude Design, claude.ai and here. Before clicking an important button, pause the cursor on it for half a second; that makes the zoom land nicely.
    - Say **"mark: <what just happened>"** to label a moment, and **"stop recording"** when done.
-   - To write a prompt privately, say **"pause"**, then write it however you like. I polish it, put it on
+   - Live polish: type any rough prompt into the prompt box, press Ctrl+Alt+P (⌘⌥P on Mac), wait for it to
+     rewrite itself, then press Enter.
+   - To write a prompt privately instead, say **"pause"**, then write it however you like. I polish it, put it on
      your clipboard and resume; you paste it into Claude Design or Claude Code on camera.
+
+## Live polish (default): write rough, it becomes polished in place
+
+The user types a rough prompt straight into the real prompt box (Claude Design, claude.ai, the Claude
+Code desktop app) while recording, presses **Ctrl+Alt+P** (**⌘⌥P** on macOS), and the text is rewritten
+in place into a polished prompt that types itself out (or is pasted with `--polish paste`). They then
+press Enter themselves. The editor cuts everything from the first rough keystroke until the polished
+text starts appearing, so the video shows an empty box, then the polished prompt being written.
+
+- Start with `REC start --polish type` (or `--polish paste`). Needs `pip install pynput` and the
+  `claude` CLI on PATH (the rewrite uses the user's own Claude Code login). Check with `REC doctor`.
+- macOS: the app running Claude Code needs **Accessibility** and **Input Monitoring** permission
+  (System Settings → Privacy & Security), or the hotkey and typing do nothing. Restart that app after.
+- Test before recording: `python3 scripts/polish.py --test "make it 3d n add a submit button"`.
+- Tell the user: click into the prompt box, type anything, press the hotkey, keep hands off the keyboard
+  until it finishes typing (a few seconds), then press Enter to send.
+- It works in normal text boxes (browser, desktop apps). In a plain terminal (`claude` CLI) select-all
+  doesn't work, so use the pause flow below there, or run Claude Code's desktop app instead.
+- Polished prompts follow `reference/prompt-playbook.md` rules (kept in sync inside `polish.py`).
 
 ## Polish-and-paste: rough prompt off camera, polished prompt on camera
 

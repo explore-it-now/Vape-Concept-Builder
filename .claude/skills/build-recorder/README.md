@@ -16,7 +16,7 @@ Windows (PowerShell):
 git clone https://github.com/explore-it-now/Vape-Concept-Builder.git
 powershell -ExecutionPolicy Bypass -File .\Vape-Concept-Builder\.claude\skills\build-recorder\install.ps1
 ```
-Requirements: Python 3, ffmpeg, Node.js + Playwright (for the product demo).
+Requirements: Python 3, ffmpeg, Node.js + Playwright (for the product demo), `pip install pynput` (for live polish).
 macOS: allow Screen Recording for your terminal / Claude app (System Settings → Privacy & Security).
 
 ## Use
