@@ -33,6 +33,34 @@ The recorder captures the screen of the machine Claude Code runs on. It works in
    - The whole main screen is being recorded (not audio). Turn on Do Not Disturb and close anything private.
    - Work normally in Claude Design, claude.ai and here. Before clicking an important button, pause the cursor on it for half a second; that makes the zoom land nicely.
    - Say **"mark: <what just happened>"** to label a moment, and **"stop recording"** when done.
+   - To write a prompt privately, say **"pause"**, then write it however you like. I polish it, put it on
+     your clipboard and resume; you paste it into Claude Design or Claude Code on camera.
+
+## Polish-and-paste: rough prompt off camera, polished prompt on camera
+
+The user wants viewers to see well-crafted prompts. They write rough prompts off camera; the video only
+shows the polished prompt being pasted and sent in the real tool, and Claude building from it. Nothing
+is faked: the polished prompt is what actually gets sent.
+
+When the user says **"pause"** (or "polish", or "off camera") while recording:
+1. Run `REC pause` immediately. It stops capture and cuts the last 8 s, removing them asking to pause.
+2. Tell them in one line: "Paused. Write your prompt however you like."
+3. When they send the rough prompt, rewrite it following `reference/prompt-playbook.md`: keep their
+   intent, specifics and wording where it's specific; add structure, fix spelling, make it concrete.
+   Don't invent features they didn't ask for. Write it to `build-recording/prompts/NN.md`.
+4. `REC clip --file build-recording/prompts/NN.md` to put it on the clipboard.
+5. Show the polished prompt in full and say where to paste it (Claude Design, claude.ai, or here),
+   then ask "Ready? I'll resume the recording." Only when they confirm, run `REC resume`, then
+   `REC mark "<first ~80 chars>" --kind prompt`.
+6. If the polished prompt is for **this** Claude Code session, they paste it here after resuming.
+   Treat it as a new instruction and build it.
+
+For the whole build up front, write the full script in one go (step 3 of Start) and put each prompt on
+the clipboard just before it's needed (pause → clip → resume, or clip while recording if the chat is
+off screen).
+
+Keep the terminal or chat window where this happens off the recorded screen if possible (a second
+monitor, or minimised) so the polishing conversation isn't visible even briefly.
 
 ## 2. While building: add markers
 
@@ -43,7 +71,7 @@ Markers become section cards and shot-list notes. Each is one quick command; nev
 - **Milestones**: `REC mark "Build passes" --kind step`, `REC mark "Live at <url>" --kind step`.
 - When the user says "mark: X", run `REC mark "X" --kind step` (or `section` if it names a new stage).
 
-If the session needs a pause (lunch, a call), `REC stop` and later `REC start` again: parts are joined automatically.
+For a break (lunch, a call), `REC pause` and later `REC resume`: parts are joined automatically.
 
 ## 3. Stop and record the product demo
 

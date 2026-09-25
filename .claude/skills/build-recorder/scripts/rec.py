@@ -11,6 +11,9 @@ Standard library only. Needs ffmpeg (brew/winget/apt, or `pip install imageio-ff
   rec.py start  [--dir D]            start recording the screen + cursor/clicks
   rec.py mark   "text" [--kind K]    add a marker (K = section | step | prompt)
   rec.py status                      is it recording? how long?
+  rec.py pause  [--trim 8]           pause (e.g. while writing a rough prompt); cuts the last 8 s
+  rec.py resume                      resume recording (parts are joined in the edit)
+  rec.py clip   "text" | --file F    copy a polished prompt to the clipboard
   rec.py stop                        stop recording
   rec.py edit   [--demo demo.mp4]    produce final.mp4 + shotlist.md
 
@@ -346,9 +349,46 @@ def cmd_stop(a):
                 os.kill(pid, signal.SIGKILL)
     st["parts"][-1]["end"] = time.time()
     st["ffmpeg_pid"] = None
+    if getattr(a, "trim", 0):
+        # The last few seconds before a pause show the user asking to pause: cut them.
+        st["parts"][-1]["trim_end"] = a.trim
     save_state(d, st)
     dur = st["parts"][-1]["end"] - st["parts"][-1]["start"]
-    print(f"STOPPED. Part {len(st['parts'])}: {dur / 60:.1f} min → {st['parts'][-1]['video']}")
+    word = "PAUSED" if getattr(a, "trim", 0) else "STOPPED"
+    print(f"{word}. Part {len(st['parts'])}: {dur / 60:.1f} min → {st['parts'][-1]['video']}")
+
+
+def cmd_pause(a):
+    """Pause for private work (e.g. writing a rough prompt). Nothing is recorded until resume."""
+    st = load_state(a.dir)
+    if not st or not alive(st.get("ffmpeg_pid")):
+        die("Not recording.")
+    cmd_stop(a)
+
+
+def cmd_resume(a):
+    cmd_start(a)
+
+
+def cmd_clip(a):
+    """Copy text (or a file's contents) to the clipboard, ready to paste into Claude Design/Code."""
+    text = open(a.file, encoding="utf-8").read() if a.file else a.text
+    if text is None:
+        die("Give text or --file.")
+    if SYSTEM == "Darwin":
+        cmd = ["pbcopy"]
+    elif SYSTEM == "Windows":
+        # clip.exe mangles non-ASCII; PowerShell's Set-Clipboard reads UTF-8 from stdin correctly.
+        cmd = ["powershell", "-NoProfile", "-Command", "$input | Out-String | Set-Clipboard"]
+    else:
+        cmd = ["wl-copy"] if shutil.which("wl-copy") else ["xclip", "-selection", "clipboard"]
+    try:
+        # xclip keeps running to serve the clipboard: detach its output so callers don't wait on it.
+        subprocess.run(cmd, input=text.rstrip("\n"), text=True, check=True, encoding="utf-8",
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        die(f"Could not copy to the clipboard ({e}).")
+    print(f"COPIED {len(text)} characters to the clipboard.")
 
 
 # ---------------------------------------------------------------- editing
@@ -578,6 +618,7 @@ def cmd_edit(a):
         if not os.path.exists(src):
             continue
         dur, W, H = mkv_duration(ff, src)
+        dur = max(0.0, dur - part.get("trim_end", 0))
         if dur < 1:
             continue
         p0 = part["start"] + a.offset
@@ -687,6 +728,12 @@ def main():
     with_dir(sub.add_parser("start"))
     with_dir(sub.add_parser("status"))
     with_dir(sub.add_parser("stop"))
+    pz = with_dir(sub.add_parser("pause"))
+    pz.add_argument("--trim", type=float, default=8.0, help="seconds cut from just before the pause")
+    with_dir(sub.add_parser("resume"))
+    cl = with_dir(sub.add_parser("clip"))
+    cl.add_argument("text", nargs="?")
+    cl.add_argument("--file")
     m = with_dir(sub.add_parser("mark"))
     m.add_argument("text")
     m.add_argument("--kind", default="step", choices=["section", "step", "prompt"])
@@ -713,7 +760,8 @@ def main():
     a = ap.parse_args()
     if a.cmd == "_logger":
         return logger_loop(a.dir)
-    {"doctor": cmd_doctor, "start": cmd_start, "status": cmd_status, "stop": cmd_stop, "mark": cmd_mark, "edit": cmd_edit}[a.cmd](a)
+    {"doctor": cmd_doctor, "start": cmd_start, "status": cmd_status, "stop": cmd_stop, "mark": cmd_mark, "edit": cmd_edit,
+     "pause": cmd_pause, "resume": cmd_resume, "clip": cmd_clip}[a.cmd](a)
 
 
 if __name__ == "__main__":
