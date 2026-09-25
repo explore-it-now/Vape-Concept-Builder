@@ -24,8 +24,12 @@ The recorder captures the screen of the machine Claude Code runs on. It works in
    - **ffmpeg missing**: macOS `brew install ffmpeg`, Windows `winget install Gyan.FFmpeg`, Linux `sudo apt install ffmpeg`. Ask before installing anything.
    - **macOS screen permission**: the app running Claude Code (Terminal, iTerm, VS Code, or the Claude app) needs **System Settings → Privacy & Security → Screen & System Audio Recording**. The user must enable it and restart that app. The first `start` may trigger the macOS prompt.
 2. Ask what they are building if they have not said, and the project name (used for the title card).
-3. Run `REC start`, then `REC mark "<first stage, e.g. Claude Design>" --kind section`.
-4. Tell the user, briefly:
+3. **Offer a prompt script** so the live prompting looks professional on camera: read
+   `reference/prompt-playbook.md`, write `build-recording/prompt-script.md` (4-9 structured prompts
+   for Claude Design then Claude Code, in order), and show it to the user. They paste these into the
+   real tools during the recording. Skip if they'd rather prompt freely.
+4. Run `REC start`, then `REC mark "<first stage, e.g. Claude Design>" --kind section`.
+5. Tell the user, briefly:
    - The whole main screen is being recorded (not audio). Turn on Do Not Disturb and close anything private.
    - Work normally in Claude Design, claude.ai and here. Before clicking an important button, pause the cursor on it for half a second; that makes the zoom land nicely.
    - Say **"mark: <what just happened>"** to label a moment, and **"stop recording"** when done.
